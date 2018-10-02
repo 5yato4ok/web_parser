@@ -24,21 +24,22 @@ class Gipfel_Parser:
     def get_subcategory_url(self,soup):
         subcategories_pages = soup.find_all('ul', {"class": "inner-menu"})
         for div in subcategories_pages:
-            sub_sub = div.find_all('ul',{"class":"submenu"})
-            if sub_sub:
-                for sub_val in sub_sub:
-                    self.sub_category_url.update(self.get_inner_url(sub_val, self.root_url))
-            else: #TODO: add null item sub_sub
-                self.sub_category_url.update(self.get_inner_url(div, self.root_url))
+            without_child = div.find_all('li',{"class":" "})
+            sub_sub = div.find_all('ul', {"class": "submenu"})
+            for child_free in without_child:
+                self.sub_category_url.update(self.get_inner_url(child_free, self.root_url,True))
+            for sub_val in sub_sub:
+                self.sub_category_url.update(self.get_inner_url(sub_val, self.root_url))
         return self.sub_category_url
 
-    def get_inner_url(self,div,add = ''):
+    def get_inner_url(self,div,add = '',check_root = False):
         test = set()
         test.add(str(add + div.a['href']))
-        for value in div.contents:
-            if isinstance(value, NavigableString):
-                continue
-            test.add(str(add+ value.a['href']))
+        if not check_root:
+            for value in div.contents:
+                if isinstance(value, NavigableString): # or not value.has_attr('href')
+                    continue
+                test.add(str(add+ value.a['href']))
         return test
     def parse_category(self, category_url):
         sub_cat_url = self.get_subcategory_url(category_url)
