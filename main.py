@@ -52,27 +52,18 @@ class Gipfel_Parser:
             self.parse_subcategory(url)
 
     def parse_subcategory(self,subcat_url):
-        par = {'p': 0}
-        if "skidka" in subcat_url:
+        r = requests.get(subcat_url, allow_redirects=False)
+        if r.status_code != 200:
+            print("Error connecting to page:"+ str(r.status_code))
             return
-        soup = BeautifulSoup()
-        sys.stdout.flush()
-        print("Current number of items parsed:"+str(len(self.items_url)))
-        try:
-            r = requests.get(subcat_url, allow_redirects=False)
-            if r.status_code != 200:
-                print("Error connecting to page:"+ str(r.status_code))
-                return
-            soup = BeautifulSoup(r.text, 'html.parser')
-
-        except:
-            smth = 2
+        soup = BeautifulSoup(r.text, 'html.parser')
         pages_url = self.get_pages_url(soup)
         pages_url.add(subcat_url)
         for page in pages_url:
             #need to check for additional pages
             self.parse_page(page)
-        smth =2
+        sys.stdout.flush()
+        print("Current number of items parsed:"+str(len(self.items_url)))
 
     def parse_page(self, page_url):
         self.get_items_url(page_url)
