@@ -1,5 +1,6 @@
 import xml.etree.ElementTree
 import requests
+import sys
 from bs4 import BeautifulSoup, NavigableString
 
 class Gipfel_Parser:
@@ -52,13 +53,26 @@ class Gipfel_Parser:
 
     def parse_subcategory(self,subcat_url):
         par = {'p': 0}
-        r = requests.get(subcat_url, params=par)
-        soup = BeautifulSoup(r.text, 'html.parser')
+        if "skidka" in subcat_url:
+            return
+        soup = BeautifulSoup()
+        sys.stdout.flush()
+        print("Current number of items parsed:"+str(len(self.items_url)))
+        try:
+            r = requests.get(subcat_url, allow_redirects=False)
+            if r.status_code != 200:
+                print("Error connecting to page:"+ str(r.status_code))
+                return
+            soup = BeautifulSoup(r.text, 'html.parser')
+
+        except:
+            smth = 2
         pages_url = self.get_pages_url(soup)
         pages_url.add(subcat_url)
         for page in pages_url:
             #need to check for additional pages
             self.parse_page(page)
+        smth =2
 
     def parse_page(self, page_url):
         self.get_items_url(page_url)
@@ -70,10 +84,22 @@ class Gipfel_Parser:
         return self.category_url
 
     def get_pages_url(self,soup):
-        div_pages = soup.find_all('div', {"class": "module-pagination"})
+        #start pages
+        div_pages = soup.find_all('div', {"class": "nums"})
         pages_url  = set()
         for div in div_pages:
-            pages_url.update(self.get_inner_url(div,self.root_url))
+            pages_url.add(str(self.root_url + div.a['href']))
+            links = div.find_all('a')
+            pages_num = dict()
+            for a in links:
+                if a.has_attr('class'):
+                    continue
+                pages_num[int(a.contents[0])] = self.root_url+ str(a['href'])
+            max_page = max(pages_num,key=int)
+            for num in range(2,max_page+1):
+                page_url = str(self.root_url + div.a['href'])
+                page_url = page_url.replace(page_url[len(page_url)-1], str(num))
+                pages_url.add(page_url)
         return pages_url
 
     def get_items_url(self,page_url):
@@ -90,3 +116,4 @@ if __name__ == "__main__":
     test_class = Gipfel_Parser('https://gipfel.ru','https://gipfel.ru/catalog')
     #test_class.parse_subcategory("https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/")
     test_class.parse_catalog()
+    smth =2
