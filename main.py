@@ -33,9 +33,9 @@ class Gipfel_Parser:
         r = requests.get(self.catalog_url, params=par)
         soup = BeautifulSoup(r.text, 'html.parser')
         self.sub_category_url = self.get_subcategory_url(soup)
-        #for url in self.sub_category_url:
-        tmp = list(self.sub_category_url)
-        self.parse_subcategory(tmp[0])
+        for url in self.sub_category_url:
+            self.parse_subcategory(url)
+        #self.parse_subcategory('https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/')
         for item in self.items_url:
             self.parse_item(item)
 
@@ -45,14 +45,25 @@ class Gipfel_Parser:
         item = Item()
         item.description = self.get_description(soup)
         item.param,item.vendor = self.get_charecteristics(soup)
-        item.name,item.articulos = self.get_name_articulos(soup)
+        item.name,item.article = self.get_name_articulos(soup)
         item.categories = self.get_categories(soup)
         item.picture = self.get_picture(soup)
         item.old_price,item.new_price = self.get_price(soup)
+        self.items.add(item)
 
 
     def get_price(self,soup):
-        return 0 , 1
+        cur_price = soup.find_all('div', {"class", "price eres"})
+        current = 0
+        for value in cur_price:
+            current_s = value.get_text().replace(u"руб.","").replace(" ","")
+            current = int(current_s)
+        old_price = soup.find_all('div', {"class", "price discount"})
+        old = 0
+        for val in old_price:
+            old_s = val.get_text().replace(u"руб.","").replace(" ","")
+            old = int(old_s)
+        return old, current
 
     def get_picture(self,soup):
         pictures = []
@@ -89,8 +100,10 @@ class Gipfel_Parser:
 
     def get_description(self,soup):
         description = soup.find_all('div', {"class": "detail_text"})
-        test = ""
-        return test
+        text = ""
+        for value in description:
+            text = value.get_text()
+        return text
 
     def get_charecteristics(self,soup):
         charecteristics = soup.find_all('table', {"class": "props_list"})
