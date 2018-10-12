@@ -1,7 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import xml.etree.ElementTree
 import requests
 import sys
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup
+
+
+class Item:
+    name = ''
+    categories = []
+    article = 0
+    picture = ''
+    old_price = 0
+    new_price = 0
+    description = ''
+    vendor = ''
+    param = dict()
 
 class Gipfel_Parser:
     root_url = ''
@@ -9,6 +23,7 @@ class Gipfel_Parser:
     items_url = set()
     category_url = set()
     sub_category_url = set()
+    items = set()
     def __init__(self,root_url_,catalog_url_):
         self.root_url = root_url_
         self.catalog_url = catalog_url_
@@ -18,8 +33,69 @@ class Gipfel_Parser:
         r = requests.get(self.catalog_url, params=par)
         soup = BeautifulSoup(r.text, 'html.parser')
         self.sub_category_url = self.get_subcategory_url(soup)
-        for url in self.sub_category_url:
-            self.parse_subcategory(url)
+        #for url in self.sub_category_url:
+        tmp = list(self.sub_category_url)
+        self.parse_subcategory(tmp[0])
+        for item in self.items_url:
+            self.parse_item(item)
+
+    def parse_item(self,url):
+        r = requests.get(url, allow_redirects=False)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        item = Item()
+        item.description = self.get_description(soup)
+        item.param,item.vendor = self.get_charecteristics(soup)
+        item.name,item.articulos = self.get_name_articulos(soup)
+        item.categories = self.get_categories(soup)
+        item.picture = self.get_picture(soup)
+        item.old_price,item.new_price = self.get_price(soup)
+
+
+    def get_price(self,soup):
+        return 0 , 1
+
+    def get_picture(self,soup):
+        return []
+
+    def get_categories(self,soup):
+        categories = soup.find_all('div', {"class", "nav-page"})
+        return ''
+
+    def get_name_articulos(self,soup):
+        name = ''
+        articulos = 0
+        name_artic = soup.find_all('div', {"class": "col-md-12"})
+        for value in name_artic:
+            name = list(value.find_all('h1'))[0].get_text()
+            art = value.find_all('p',{"class":"good-vendor"})
+            for a in art:
+                href = list(a.find_all('a'))[0].get_text()
+                href = href.replace(u"Артикул: ","")
+                articulos = href
+        return name,articulos
+
+    def get_description(self,soup):
+        description = soup.find_all('div', {"class": "detail_text"})
+        test = ""
+        return test
+
+    def get_charecteristics(self,soup):
+        charecteristics = soup.find_all('table', {"class": "props_list"})
+        vendor = ''
+        charac = dict()
+        for val in charecteristics:
+            tds_name = list(val.find_all('td', {"class": "char_name"}))
+            tds = list(val.find_all('td', {"class": "char_value"}))
+            for k in range(0,len(tds_name)):
+                category = tds_name[k].contents[1].get_text()
+                cat_val = tds[k].contents[1].get_text().replace('\t','').replace('\n','')
+                if u'Бренд' == category:
+                    vendor = cat_val
+                    continue
+                charac[category] = cat_val
+        return charac,vendor
+
+
 
     def get_subcategory_url(self,soup):
         parent_blocks = soup.find_all('div', {"class": "submenu-block"})
