@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 
 class Item:
     name = ''
-    categories = []
-    article = 0
-    picture = ''
+    categories = list()
+    article = ''
+    picture = []
     old_price = 0
     new_price = 0
     description = ''
@@ -55,11 +55,25 @@ class Gipfel_Parser:
         return 0 , 1
 
     def get_picture(self,soup):
-        return []
+        pictures = []
+        divs = soup.find_all('div', {"class", "wrapp_thumbs"})
+        for value in divs:
+            imgs = value.find_all('img')
+            for pic in imgs:
+                pictures.append(self.root_url+pic['src'])
+        return pictures
 
     def get_categories(self,soup):
-        categories = soup.find_all('div', {"class", "nav-page"})
-        return ''
+        categories = list()
+        div = soup.find_all('div', {"class", "nav-page"})
+        for val in div:
+            bread = val.find_all("a")
+            for crumb in bread:
+                cat = crumb.get_text()
+                if cat == u"Главная":
+                    continue
+                categories.append(cat)
+        return categories
 
     def get_name_articulos(self,soup):
         name = ''
@@ -70,8 +84,7 @@ class Gipfel_Parser:
             art = value.find_all('p',{"class":"good-vendor"})
             for a in art:
                 href = list(a.find_all('a'))[0].get_text()
-                href = href.replace(u"Артикул: ","")
-                articulos = href
+                articulos = href.replace(u"Артикул: ","")
         return name,articulos
 
     def get_description(self,soup):
