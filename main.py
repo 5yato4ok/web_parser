@@ -36,20 +36,28 @@ class Gipfel_Parser:
         for url in self.sub_category_url:
             self.parse_subcategory(url)
         #self.parse_subcategory('https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/')
+        counter = 0
         for item in self.items_url:
             self.parse_item(item)
+            counter+=1
+            print("Current number of items parse:" + str(counter))
 
     def parse_item(self,url):
-        r = requests.get(url, allow_redirects=False)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        item = Item()
-        item.description = self.get_description(soup)
-        item.param,item.vendor = self.get_charecteristics(soup)
-        item.name,item.article = self.get_name_articulos(soup)
-        item.categories = self.get_categories(soup)
-        item.picture = self.get_picture(soup)
-        item.old_price,item.new_price = self.get_price(soup)
-        self.items.add(item)
+        try:
+            r = requests.get(url, allow_redirects=False)
+            if r.status_code != 200:
+                return
+            soup = BeautifulSoup(r.text, 'html.parser')
+            item = Item()
+            item.description = self.get_description(soup)
+            item.param,item.vendor = self.get_charecteristics(soup)
+            item.name,item.article = self.get_name_articulos(soup)
+            item.categories = self.get_categories(soup)
+            item.picture = self.get_picture(soup)
+            item.old_price,item.new_price = self.get_price(soup)
+            self.items.add(item)
+        except:
+            return
 
 
     def get_price(self,soup):
@@ -165,7 +173,7 @@ class Gipfel_Parser:
             #need to check for additional pages
             self.parse_page(page)
         sys.stdout.flush()
-        print("Current number of items parsed:"+str(len(self.items_url)))
+        print("Current number of items url:"+str(len(self.items_url)))
 
     def parse_page(self, page_url):
         self.get_items_url(page_url)
@@ -197,11 +205,62 @@ class Gipfel_Parser:
 
     def get_items_url(self,page_url):
         par = {'p': 0}
-        r = requests.get(page_url, params=par)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        curp_items = soup.find_all('div', {"class": "main__goods--item main__goods--tile"})
-        for item in curp_items :
-            self.items_url.update(self.get_inner_url(item,self.root_url)) #TODO: check non unique values
+        try:
+            r = requests.get(page_url, params=par)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            curp_items = soup.find_all('div', {"class": "main__goods--item main__goods--tile"})
+            for item in curp_items :
+                self.items_url.update(self.get_inner_url(item,self.root_url)) #TODO: check non unique values
+        except:
+            return
+
+    def write_to_txml(self,file_name):
+        result = open(file_name,'w')
+        start = """
+<?xml version="1.0" encoding="UTF-8"?>\n
+    <yml_catalog date="2017-02-05 17:22">\n
+	    <offers>\n"""
+        result.write(start)
+        for item in self.items:
+            tabs = "          "
+            result.write(tabs+"<offer>\n")
+            result.write(tabs+" <name>")
+            result.write(item.name.encode('utf8'))
+
+            result.write("</name>\n")
+            result.write(tabs+" <categories>\n")
+            id = 10
+            prev = 1
+            for cat in item.categories:
+                result.write(tabs+"     <category id = \""+str(id)+"\" parentId=\""+str(prev)+"\">")
+                prev = id
+                id+=1
+                result.write(cat.encode('utf8'))
+                result.write("</category>\n")
+            result.write(tabs+"</categories>\n")
+            result.write(tabs+" <article>"+item.article+"</article>\n")
+            for pic in item.picture:
+                result.write(tabs+" <picture>"+pic+"</picture>\n")
+            result.write(tabs+" <old_price>"+str(item.old_price)+"</old_price>\n")
+            result.write(tabs + " <new_price>" + str(item.new_price) + "</new_price>\n")
+            result.write(tabs + " <description>")
+            result.write(item.description.encode('utf8'))
+            result.write( "</description>\n")
+            result.write(tabs + " <vendor>" + item.vendor + "</vendor>\n")
+            for par in item.param:
+                result.write(tabs+" <param name=\"")
+                result.write(par.encode('utf8'))
+                result.write("\">")
+                result.write(item.param[par].encode('utf8'))
+                result.write("</param>\n")
+            result.write(tabs+"</offer>")
+        end = """
+        </offers>\n
+    </yml_catalog>\n
+        """
+        result.write(end)
+        result.write('Total number of elements:'+str(len(self.items)))
+        result.close()
 
 
 if __name__ == "__main__":
@@ -209,4 +268,5 @@ if __name__ == "__main__":
     test_class = Gipfel_Parser('https://gipfel.ru','https://gipfel.ru/catalog')
     #test_class.parse_subcategory("https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/")
     test_class.parse_catalog()
+    test_class.write_to_txml('result.xml')
     smth =2
