@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import xml.etree.ElementTree
 import requests
 import sys
+import time
 from bs4 import BeautifulSoup
 
 
@@ -24,23 +24,30 @@ class Gipfel_Parser:
     category_url = set()
     sub_category_url = set()
     items = set()
-    def __init__(self,root_url_,catalog_url_):
+    timeout = 5
+    is_log = False
+    def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
         self.root_url = root_url_
         self.catalog_url = catalog_url_
+        self.timeout = timeout_
+        self.is_log = is_log_
 
     def parse_catalog(self):
         par = {'p': 0}
         r = requests.get(self.catalog_url, params=par)
         soup = BeautifulSoup(r.text, 'html.parser')
         self.sub_category_url = self.get_subcategory_url(soup)
-        for url in self.sub_category_url:
-            self.parse_subcategory(url)
-        #self.parse_subcategory('https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/')
+        #for url in self.sub_category_url:
+        #    self.parse_subcategory(url)
+        self.parse_subcategory('https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/')
         counter = 0
         for item in self.items_url:
+            if counter%50 == 0:
+                time.sleep(self.timeout)
             self.parse_item(item)
-            counter+=1
-            print("Current number of items parse:" + str(counter))
+            counter += 1
+            if self.is_log:
+                print("Current number of items parse:" + str(counter))
 
     def parse_item(self,url):
         try:
@@ -75,7 +82,7 @@ class Gipfel_Parser:
 
     def get_picture(self,soup):
         pictures = []
-        divs = soup.find_all('div', {"class", "wrapp_thumbs"})
+        divs = soup.find_all('div', {"class", "slides"})
         for value in divs:
             imgs = value.find_all('img')
             for pic in imgs:
@@ -172,8 +179,8 @@ class Gipfel_Parser:
         for page in pages_url:
             #need to check for additional pages
             self.parse_page(page)
-        sys.stdout.flush()
-        print("Current number of items url:"+str(len(self.items_url)))
+        if self.is_log:
+            print("Current number of items url:"+str(len(self.items_url)))
 
     def parse_page(self, page_url):
         self.get_items_url(page_url)
@@ -226,7 +233,6 @@ class Gipfel_Parser:
             result.write(tabs+"<offer>\n")
             result.write(tabs+" <name>")
             result.write(item.name.encode('utf8'))
-
             result.write("</name>\n")
             result.write(tabs+" <categories>\n")
             id = 10
@@ -253,7 +259,7 @@ class Gipfel_Parser:
                 result.write("\">")
                 result.write(item.param[par].encode('utf8'))
                 result.write("</param>\n")
-            result.write(tabs+"</offer>")
+            result.write(tabs+"</offer>\n")
         end = """
         </offers>\n
     </yml_catalog>\n
@@ -261,12 +267,3 @@ class Gipfel_Parser:
         result.write(end)
         result.write('Total number of elements:'+str(len(self.items)))
         result.close()
-
-
-if __name__ == "__main__":
-    #parse_catolog("https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/")
-    test_class = Gipfel_Parser('https://gipfel.ru','https://gipfel.ru/catalog')
-    #test_class.parse_subcategory("https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/")
-    test_class.parse_catalog()
-    test_class.write_to_txml('result.xml')
-    smth =2
