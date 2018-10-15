@@ -15,13 +15,27 @@ class EmittingStream(QtCore.QObject):
 #TODO: run parser in different thread. but get somehow text
 class QThread1(QtCore.QThread):
     sig1 = QtCore.pyqtSignal(str)
+    timeout = 0
+    logging = False
+    textWritten_ = QtCore.pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, timeout_,logging_,parent=None):
         QtCore.QThread.__init__(self, parent)
+        self.timeout = timeout_
+        self.logging = logging_
+
+    def run(self):
+        test_class = Gipfel_Parser('https://gipfel.ru', 'https://gipfel.ru/catalog',
+                                   self.timeout, self.logging)
+        test_class.textWritten.connect(self.textWritten_)
+
+        test_class.parse_catalog()
+        test_class.write_to_txml('result.xml')
 
 class Widget(QtGui.QMainWindow, Ui_MainWindow):
     timeout = 0
     logging = True
+    done = QtCore.pyqtSignal()
 
     def normalOutputWritten(self, text):
         """Append text to the QTextEdit."""
@@ -31,12 +45,11 @@ class Widget(QtGui.QMainWindow, Ui_MainWindow):
         cursor.insertText(text)
         self.plainTextEdit.setTextCursor(cursor)
         self.plainTextEdit.ensureCursorVisible()
-        self.MainWindow.update()
+        self.update()
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
-        sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
         self.setupUi(self)
         self.logging = self.radioButton.isChecked()
         self.spinBox.setValue(0)
@@ -44,22 +57,23 @@ class Widget(QtGui.QMainWindow, Ui_MainWindow):
         self.spinBox.valueChanged.connect(self.spinval_changed)
         self.radioButton.toggled.connect(self.radiobox_changed)
 
-
-    def __del__(self):
-        # Restore sys.stdout
-        sys.stdout = sys.__stdout__
-
     def radiobox_changed(self,val):
         self.logging = val
 
     def spinval_changed(self,val):
         self.timeout = val
 
+    def done(self):
+        self.pushButton.setEnabled(True)
+
     def on_btn_clicked(self):
-        smth = 2
-        test_class = Gipfel_Parser('https://gipfel.ru','https://gipfel.ru/catalog',self.timeout,self.logging)
-        test_class.parse_catalog()
-        test_class.write_to_txml('result.xml')
+        self.pushButton.setEnabled(False)
+        thread = QThread1(timeout_=self.timeout, logging_=self.logging)
+        thread.textWritten_.connect(self.normalOutputWritten)
+        self.connect(thread, QtCore.SIGNAL("finished()"), self.done)
+        thread.start()
+
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

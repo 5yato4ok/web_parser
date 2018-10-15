@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import requests
 import sys
+from PyQt4 import QtCore,QtGui
 import time
 from bs4 import BeautifulSoup
 
@@ -17,7 +18,7 @@ class Item:
     vendor = ''
     param = dict()
 
-class Gipfel_Parser:
+class Gipfel_Parser(QtCore.QObject):
     root_url = ''
     catalog_url = ''
     items_url = set()
@@ -26,7 +27,10 @@ class Gipfel_Parser:
     items = set()
     timeout = 5
     is_log = False
+    textWritten = QtCore.pyqtSignal(str)
+
     def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
+        QtCore.QObject.__init__(self)
         self.root_url = root_url_
         self.catalog_url = catalog_url_
         self.timeout = timeout_
@@ -47,7 +51,8 @@ class Gipfel_Parser:
             self.parse_item(item)
             counter += 1
             if self.is_log:
-                print("Current number of items parse:" + str(counter))
+                text = "Current number of items parse:" + str(counter)+"\n"
+                self.textWritten.emit(text)
 
     def parse_item(self,url):
         try:
@@ -171,7 +176,8 @@ class Gipfel_Parser:
     def parse_subcategory(self,subcat_url):
         r = requests.get(subcat_url, allow_redirects=False)
         if r.status_code != 200:
-            print("Error connecting to page:"+ str(r.status_code))
+            text = "Error connecting to page:"+ str(r.status_code)+"\n"
+            self.textWritten.emit(text)
             return
         soup = BeautifulSoup(r.text, 'html.parser')
         pages_url = self.get_pages_url(soup)
@@ -180,7 +186,8 @@ class Gipfel_Parser:
             #need to check for additional pages
             self.parse_page(page)
         if self.is_log:
-            print("Current number of items url:"+str(len(self.items_url)))
+            text = "Current number of items url:"+str(len(self.items_url))+"\n"
+            self.textWritten.emit(text)
 
     def parse_page(self, page_url):
         self.get_items_url(page_url)
