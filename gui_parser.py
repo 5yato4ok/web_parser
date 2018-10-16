@@ -22,7 +22,7 @@ class QThread1(QtCore.QThread):
     every_day = False
     textWritten_ = QtCore.pyqtSignal(str)
 
-    def __init__(self, timeout_,logging_,every_day_,parent=None):
+    def __init__(self, timeout_ = False,logging_=False,every_day_ =False,parent=None):
         QtCore.QThread.__init__(self, parent)
         self.timeout = timeout_
         self.logging = logging_
@@ -38,6 +38,7 @@ class QThread1(QtCore.QThread):
         self.textWritten_.emit("Writing result over\n")
 
     def run(self):
+        self.textWritten_.emit("Start thread\n")
         if self.every_day:
             while True:
                 self.run_parser()
@@ -52,6 +53,7 @@ class Widget(QtGui.QMainWindow, Ui_MainWindow):
     logging = True
     every_day = False
     done = QtCore.pyqtSignal()
+    thread = QThread1()
 
     def normalOutputWritten(self, text):
         """Append text to the QTextEdit."""
@@ -74,6 +76,7 @@ class Widget(QtGui.QMainWindow, Ui_MainWindow):
         self.spinBox.valueChanged.connect(self.spinval_changed)
         self.checkBox.stateChanged.connect(self.radiobox_changed)
         self.checkBox_2.stateChanged.connect(self.radiobox2_changed)
+        
 
     def radiobox2_changed(self,val):
         self.every_day = self.checkBox_2.isChecked()
@@ -91,10 +94,10 @@ class Widget(QtGui.QMainWindow, Ui_MainWindow):
 
     def on_btn_clicked(self):
         self.pushButton.setEnabled(False)
-        thread = QThread1(timeout_=self.timeout, logging_=self.logging, every_day_=self.every_day)
-        thread.textWritten_.connect(self.normalOutputWritten)
-        self.connect(thread, QtCore.SIGNAL("finished()"), self.done)
-        thread.start()
+        self.thread = QThread1(timeout_=self.timeout, logging_=self.logging, every_day_=self.every_day)
+        self.thread.textWritten_.connect(self.normalOutputWritten)
+        self.connect(self.thread, QtCore.SIGNAL("finished()"), self.done)
+        self.thread.start()
 
 
 

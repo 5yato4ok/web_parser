@@ -41,9 +41,9 @@ class Gipfel_Parser(QtCore.QObject):
         r = requests.get(self.catalog_url, params=par)
         soup = BeautifulSoup(r.text, 'html.parser')
         self.sub_category_url = self.get_subcategory_url(soup)
-        #for url in self.sub_category_url:
-        #    self.parse_subcategory(url)
-        self.parse_subcategory('https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/')
+        for url in self.sub_category_url:
+            self.parse_subcategory(url)
+        #self.parse_subcategory('https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/')
         counter = 0
         for item in self.items_url:
             if counter%50 == 0:
