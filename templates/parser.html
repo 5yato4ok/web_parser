@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Flask Intro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+  <div class="container-fluid">
+  <h1>Gipfel Parser</h1>
+  <p>Set input data</p>
+  <p> </p>
+  <div class="row">
+    <form action="{{ url_for('welcome') }}" method="POST">
+    <div class="col-sm-4" style="">
+        <label for="timeout" class="col-2 col-form-label">Timeout</label>
+        <input class="form-control" type="number" value="0" id="timeout" aria-describedby="timeoutHelp">
+        <small id="timeoutHelp" class="form-text text-muted">Set timout after each 50 item parsing</small>
+        <div class="form-check">
+         <label class="form-check-label">
+        <input type="checkbox" class="form-check-input">
+        Logging enabled 
+        </label>
+        <label class="form-check-label">
+        <input type="checkbox" class="form-check-input">
+        Daily parsing 
+        </label>
+      </div>
+      <p> </p>
+      <p> </p>
+        <input type="submit" class="btn btn-primary active" value="Start Parsing">
+    </div>
+  </form>
+
+    <div class="col-sm-4">
+        <label for="log">Logging:</label>
+        <textarea class="form-control" id="log" rows="8" readonly></textarea>
+        <p> </p>
+        <p> </p>
+    </div>
+
+  </div>
+  </div>
+  </body>
+</html>

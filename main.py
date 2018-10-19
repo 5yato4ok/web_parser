@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import requests
 import sys
-from PyQt4 import QtCore,QtGui
+#from PyQt4 import QtCore,QtGui
 import time
 from bs4 import BeautifulSoup
 
@@ -18,7 +18,8 @@ class Item:
     vendor = ''
     param = dict()
 
-class Gipfel_Parser(QtCore.QObject):
+#class Gipfel_Parser(QtCore.QObject):
+class Gipfel_Parser():
     root_url = ''
     catalog_url = ''
     items_url = set()
@@ -27,10 +28,10 @@ class Gipfel_Parser(QtCore.QObject):
     items = set()
     timeout = 5
     is_log = False
-    textWritten = QtCore.pyqtSignal(str)
+    #textWritten = QtCore.pyqtSignal(str)
 
     def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
-        QtCore.QObject.__init__(self)
+        #QtCore.QObject.__init__(self)
         self.root_url = root_url_
         self.catalog_url = catalog_url_
         self.timeout = timeout_
@@ -52,7 +53,7 @@ class Gipfel_Parser(QtCore.QObject):
             counter += 1
             if self.is_log:
                 text = "Current number of items parse:" + str(counter)+"\n"
-                self.textWritten.emit(text)
+                #self.textWritten.emit(text)
 
     def parse_item(self,url):
         try:
@@ -177,7 +178,7 @@ class Gipfel_Parser(QtCore.QObject):
         r = requests.get(subcat_url, allow_redirects=False)
         if r.status_code != 200:
             text = "Error connecting to page:"+ str(r.status_code)+"\n"
-            self.textWritten.emit(text)
+            #self.textWritten.emit(text)
             return
         soup = BeautifulSoup(r.text, 'html.parser')
         pages_url = self.get_pages_url(soup)
@@ -187,7 +188,7 @@ class Gipfel_Parser(QtCore.QObject):
             self.parse_page(page)
         if self.is_log:
             text = "Current number of items url:"+str(len(self.items_url))+"\n"
-            self.textWritten.emit(text)
+            #self.textWritten.emit(text)
 
     def parse_page(self, page_url):
         self.get_items_url(page_url)
@@ -230,8 +231,7 @@ class Gipfel_Parser(QtCore.QObject):
 
     def write_to_txml(self,file_name):
         result = open(file_name,'w')
-        start = """
-<?xml version="1.0" encoding="UTF-8"?>\n
+        start = """<?xml version="1.0" encoding="UTF-8"?>\n
     <yml_catalog date="2017-02-05 17:22">\n
 	    <offers>\n"""
         result.write(start)
@@ -269,8 +269,6 @@ class Gipfel_Parser(QtCore.QObject):
             result.write(tabs+"</offer>\n")
         end = """
         </offers>\n
-    </yml_catalog>\n
-        """
+    </yml_catalog>\n"""
         result.write(end)
-        result.write('Total number of elements:'+str(len(self.items)))
         result.close()
