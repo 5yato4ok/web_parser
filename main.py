@@ -5,7 +5,10 @@ import sys
 #from PyQt4 import QtCore,QtGui
 import time
 from bs4 import BeautifulSoup
+from threading import Lock
 
+cur_text = "Result of parsing:\n"
+mutex = Lock()
 
 class Item:
     name = ''
@@ -38,13 +41,13 @@ class Gipfel_Parser():
         self.is_log = is_log_
 
     def parse_catalog(self):
+        print("Parsing catalog")
         par = {'p': 0}
         r = requests.get(self.catalog_url, params=par)
         soup = BeautifulSoup(r.text, 'html.parser')
         self.sub_category_url = self.get_subcategory_url(soup)
         for url in self.sub_category_url:
             self.parse_subcategory(url)
-        #self.parse_subcategory('https://gipfel.ru/catalog/nabory-posudy/nabory-kastryul-i-kovshey/')
         counter = 0
         for item in self.items_url:
             if counter%50 == 0:
@@ -52,7 +55,11 @@ class Gipfel_Parser():
             self.parse_item(item)
             counter += 1
             if self.is_log:
-                text = "Current number of items parse:" + str(counter)+"\n"
+                text = "Current number of items parse:" + str(counter)
+                if mutex.acquire():
+                    global cur_text
+                    cur_text += text
+                    mutex.release()
                 print(text)
                 #self.textWritten.emit(text)
 
@@ -178,7 +185,11 @@ class Gipfel_Parser():
     def parse_subcategory(self,subcat_url):
         r = requests.get(subcat_url, allow_redirects=False)
         if r.status_code != 200:
-            text = "Error connecting to page:"+ str(r.status_code)+"\n"
+            text = "Error connecting to page:"+ str(r.status_code)
+            if mutex.acquire():
+                global cur_text
+                cur_text += text
+                mutex.release()
             print(text)
             #self.textWritten.emit(text)
             return
@@ -189,7 +200,11 @@ class Gipfel_Parser():
             #need to check for additional pages
             self.parse_page(page)
         if self.is_log:
-            text = "Current number of items url:"+str(len(self.items_url))+"\n"
+            text = "Current number of items url:"+str(len(self.items_url))
+            if mutex.acquire():
+                global cur_text
+                cur_text += text
+                mutex.release()
             print(text)
             #self.textWritten.emit(text)
 

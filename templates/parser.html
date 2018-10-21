@@ -6,11 +6,13 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="static/js/application.js"></script>
   </head>
   <body>
   <div class="container-fluid">
   <h1>Gipfel Parser</h1>
-  <p>Set input data</p>
+  <p>To terminate process add /close to URL path.</p>
+  <p>Set input data.</p>
   <p> </p>
   <div class="row">
     <form action="{{ url_for('index') }}" method="POST">
@@ -28,7 +30,7 @@
         Daily parsing 
         </label>
       </div>
-      <p> </p>
+      <p>  </p>
       <p> </p>
         <input type="submit" class="btn btn-primary active" value="Start Parsing">
     </div>
@@ -36,9 +38,10 @@
 
     <div class="col-sm-4" id=log>
         <label for="log">Logging:</label>
-        <textarea class="form-control" id="log" rows="8" readonly>
+        <textarea class="form-control" id="log" rows="8" readonly aria-describedby="logHelp">
           {{ output }}
         </textarea>
+        <small id="logHelp" class="form-text text-muted">To get current status update page. WARNING: Don't submit again data unless you want to start new parsing process</small>
         <p></p>
         <p></p>
     </div>
