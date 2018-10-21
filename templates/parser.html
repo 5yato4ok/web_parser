@@ -13,18 +13,18 @@
   <p>Set input data</p>
   <p> </p>
   <div class="row">
-    <form action="{{ url_for('welcome') }}" method="POST">
+    <form action="{{ url_for('index') }}" method="POST">
     <div class="col-sm-4" style="">
         <label for="timeout" class="col-2 col-form-label">Timeout</label>
-        <input class="form-control" type="number" value="0" id="timeout" aria-describedby="timeoutHelp">
+        <input class="form-control" type="number" value="0" name="timeout" id="timeout" aria-describedby="timeoutHelp">
         <small id="timeoutHelp" class="form-text text-muted">Set timout after each 50 item parsing</small>
         <div class="form-check">
          <label class="form-check-label">
-        <input type="checkbox" class="form-check-input">
+        <input type="checkbox" class="form-check-input" name="is_logging">
         Logging enabled 
         </label>
         <label class="form-check-label">
-        <input type="checkbox" class="form-check-input">
+        <input type="checkbox" class="form-check-input" name="is_daily">
         Daily parsing 
         </label>
       </div>
@@ -36,9 +36,11 @@
 
     <div class="col-sm-4">
         <label for="log">Logging:</label>
-        <textarea class="form-control" id="log" rows="8" readonly></textarea>
-        <p> </p>
-        <p> </p>
+        <textarea class="form-control" id="log" rows="8" readonly>
+          {{ output }}
+        </textarea>
+        <p></p>
+        <p></p>
     </div>
 
   </div>
