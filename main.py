@@ -53,6 +53,7 @@ class Gipfel_Parser():
             counter += 1
             if self.is_log:
                 text = "Current number of items parse:" + str(counter)+"\n"
+                print(text)
                 #self.textWritten.emit(text)
 
     def parse_item(self,url):
@@ -178,6 +179,7 @@ class Gipfel_Parser():
         r = requests.get(subcat_url, allow_redirects=False)
         if r.status_code != 200:
             text = "Error connecting to page:"+ str(r.status_code)+"\n"
+            print(text)
             #self.textWritten.emit(text)
             return
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -188,6 +190,7 @@ class Gipfel_Parser():
             self.parse_page(page)
         if self.is_log:
             text = "Current number of items url:"+str(len(self.items_url))+"\n"
+            print(text)
             #self.textWritten.emit(text)
 
     def parse_page(self, page_url):
