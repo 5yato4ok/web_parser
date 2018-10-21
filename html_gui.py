@@ -3,20 +3,19 @@ from main import Gipfel_Parser
 import threading
 import sys
 import time
-import jinja2
+import subprocess
 
 app = Flask(__name__)
 cur_text = "Result of parsing:\n"
+saved_app = None
 thread = None
-saved_context = None
 
 class Tee(object):
     def write(self, obj):
         global cur_text
         cur_text += str(obj)
-        global app
-        with app.app_context():
-            return render_template('parser.html',name= current_app.name,output = cur_text)
+        with saved_app.test_request_context():
+            return render_template('parser.html',output = cur_text)
 
 @app.route('/')
 def home():
@@ -32,12 +31,14 @@ def start_parsing(timeout_,is_logging_,is_daily):
     global thread
     thread = threading.Thread(target=parsing,args=(timeout_,is_logging_,is_daily))
     thread.start()
-    return render_template('parser.html',output = cur_text)
+    #return render_template('parser.html',output = cur_text)
 
 @app.route('/parser',methods = ['POST', 'GET'])
 def welcome():
+    sys.stdout = Tee()
+    global saved_app
+    saved_app = current_app._get_current_object()
     if request.method == 'POST':
-        sys.stdout = Tee()
         timeout = int(request.form['timeout'])
         is_logging = None
         if 'is_logging' in request.form:
@@ -51,9 +52,10 @@ def welcome():
                 is_daily = True
             else:
                 is_daily = True
-        return start_parsing(timeout,is_logging,is_daily)
+        global saved_context
+        start_parsing(timeout,is_logging,is_daily)
     return render_template('parser.html',output= cur_text)  # render a template
 
 if __name__ == '__main__':
     app.run(debug=True)
-    saved_context = current_app._get_current_object()
+
