@@ -1,7 +1,6 @@
     #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import Flask, redirect, url_for, abort, request, render_template, current_app
-from flask_socketio import SocketIO, emit
+from flask import Flask, Response,request, render_template
 from main import Gipfel_Parser, mutex, cur_text
 import sys
 from threading import Thread, Event,Lock
@@ -9,21 +8,12 @@ from threading import Thread, Event,Lock
 import time
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
-socketio = SocketIO(app)
 
-thread= Thread()
+thread = Thread()
 thread_stop_event = Event()
 
-write_thread = Thread()
-
-def writing_log():
-    while True:
-        if mutex.acquire():
-            #render_template('parser.html', output=cur_text)
-            socketio.emit('newText', {'text': cur_text}, namespace='/')
-            mutex.release()
-        time.sleep(3)
+result_file_name = 'result.xml'
+parsing_over = False
 
 class ParsingThread(Thread):
     is_daily = False
@@ -36,20 +26,28 @@ class ParsingThread(Thread):
         self.is_daily=daily
         self.timeout = timeout_
         self.is_logging = is_logging_
+        self._stop_event = Event()
 
+    def stopped(self):
+        return self._stop_event.is_set()
 
     def run_parser(self):
+        global parsing_over
+        parsing_over = False
         print("Start task")
         test_class = Gipfel_Parser('https://gipfel.ru', 'https://gipfel.ru/catalog',
                                    self.timeout, self.is_logging)
         test_class.parse_catalog()
         print("Finished parsing")
-        test_class.write_to_txml('result.xml')
-        
+        test_class.write_to_txml(result_file_name)
+        parsing_over = True
+
+    def stop(self):
+        self._stop_event.set()
 
     def run(self):
         if self.is_daily:
-            while True:
+            while True and not self.stopped():
                 self.run_parser()
                 time.sleep(86400) #sleep a day
         else:
@@ -61,9 +59,13 @@ class Tee(object):
         cur_text += str(obj)
         #with app.app_context():
         #    return render_template('parser.html',output=cur_text)
+        #socketio.emit('newText',{'text':cur_text},namespace='/')
 
-        socketio.emit('newText',{'text':cur_text},namespace='/')
-        #return redirect(url_for('index'))
+@app.route('/result')
+def open_file():
+    with open(result_file_name,'rb') as result:
+        return Response(result.read(), mimetype='text/plain')
+
 
 @app.route('/close')
 def close():
@@ -71,6 +73,7 @@ def close():
 
 @app.route('/',methods = ['POST', 'GET'])
 def index():
+    sys.stdout = Tee()
     if request.method == 'GET':
         return render_template('parser.html', output=cur_text)  # render a template
 
@@ -89,20 +92,15 @@ def index():
             is_daily = True
     print("Start parsing")
     global thread
+    if thread.isAlive():
+        thread.stop()
     thread=ParsingThread(is_daily,timeout,is_logging)
     thread.start()
-    #start_parsing(timeout,is_logging,is_daily)
-    #return redirect(url_for('index'))
     return render_template('parser.html', output=cur_text)
 
-@socketio.on('disconnect', namespace='/')
-def test_disconnect():
-    print('Client disconnected')
-
-
 if __name__ == '__main__':
-    #app.run(debug=True)
-    sys.stdout = Tee()
-    socketio.run(app)
+    app.run(debug=True)
+
+    #socketio.run(app)
 
 

@@ -6,13 +6,24 @@ import sys
 import time
 from bs4 import BeautifulSoup
 from threading import Lock
+from anytree import NodeMixin, RenderTree
+import random
 
 cur_text = "Result of parsing:\n"
 mutex = Lock()
 
+class Category(NodeMixin):
+    def __init__(self, name, num, parent=None):
+        super(Category, self).__init__()
+        self.name = name
+        self.parent = parent
+        self.num = num
+
+
 class Item:
     name = ''
-    categories = list()
+    category = None
+    category_parent = None
     article = ''
     picture = []
     old_price = 0
@@ -27,6 +38,9 @@ class Gipfel_Parser():
     catalog_url = ''
     items_url = set()
     category_url = set()
+    categories = Category(u'Каталог',1)
+    cat_id = list()
+    cat_list = list()
     sub_category_url = set()
     items = set()
     timeout = 5
@@ -39,15 +53,18 @@ class Gipfel_Parser():
         self.catalog_url = catalog_url_
         self.timeout = timeout_
         self.is_log = is_log_
+        self.cat_id.append(1)
+
 
     def parse_catalog(self):
         print("Parsing catalog")
         par = {'p': 0}
         r = requests.get(self.catalog_url, params=par)
         soup = BeautifulSoup(r.text, 'html.parser')
-        self.sub_category_url = self.get_subcategory_url(soup)
-        for url in self.sub_category_url:
-            self.parse_subcategory(url)
+        #self.sub_category_url = self.get_subcategory_url(soup)
+        #for url in self.sub_category_url:
+        #    self.parse_subcategory(url)
+        self.parse_subcategory('https://gipfel.ru/catalog/posuda-dlya-prigotovleniya/skovorody-i-soteyniki/nabor-skovorod/')
         counter = 0
         for item in self.items_url:
             if counter%50 == 0:
@@ -64,7 +81,7 @@ class Gipfel_Parser():
                 #self.textWritten.emit(text)
 
     def parse_item(self,url):
-        try:
+        #try:
             r = requests.get(url, allow_redirects=False)
             if r.status_code != 200:
                 return
@@ -73,12 +90,13 @@ class Gipfel_Parser():
             item.description = self.get_description(soup)
             item.param,item.vendor = self.get_charecteristics(soup)
             item.name,item.article = self.get_name_articulos(soup)
-            item.categories = self.get_categories(soup)
+            #item.categories = self.get_categories(soup)
+            item.category = self.get_categories(soup)
             item.picture = self.get_picture(soup)
             item.old_price,item.new_price = self.get_price(soup)
             self.items.add(item)
-        except:
-            return
+        #except:
+        #    return
 
 
     def get_price(self,soup):
@@ -103,17 +121,41 @@ class Gipfel_Parser():
                 pictures.append(self.root_url+pic['src'])
         return pictures
 
+
     def get_categories(self,soup):
-        categories = list()
+        category = None
         div = soup.find_all('div', {"class", "nav-page"})
+        parent = None
         for val in div:
             bread = val.find_all("a")
+            i = 0
             for crumb in bread:
+                i += 1
                 cat = crumb.get_text()
                 if cat == u"Главная":
                     continue
-                categories.append(cat)
-        return categories
+                cur_node = parent
+                found = False
+                for pre,_,node in RenderTree(self.categories):
+                    val = node.name.encode('utf8')
+                    if cat.encode('utf8') == node.name.encode('utf8'):
+                        parent = node
+                        found = True
+                if not found:
+                    uniq = False
+                    key = random.randint(2,500)
+                    while not uniq:
+                        if key in self.cat_id:
+                            key = random.randint(2, 500)
+                        else:
+                            break
+                    self.cat_id.append(key)
+                    cur_node = Category(cat,key,parent)
+                    self.cat_list.append(category)
+                elif i == len(bread):
+                    cur_node = parent
+                category = cur_node
+        return category
 
     def get_name_articulos(self,soup):
         name = ''
@@ -250,39 +292,46 @@ class Gipfel_Parser():
     def write_to_txml(self,file_name):
         result = open(file_name,'w')
         start = """<?xml version="1.0" encoding="UTF-8"?>\n
-    <yml_catalog date="2017-02-05 17:22">\n
-	    <offers>\n"""
+    <yml_catalog date="2017-02-05 17:22">\n"""
         result.write(start)
+        tabs = "          "
+        result.write(tabs + " <categories>\n")
+        for pre,_,cat in RenderTree(self.categories):
+            p_num = str(cat.num)
+            if cat.parent:
+                p_num = str(cat.parent.num)
+            result.write(tabs + "     <category id = \"" + str(cat.num) + "\" parentId=\"" + p_num + "\">")
+            result.write(cat.name.encode('utf8'))
+            result.write("</category>\n")
+        result.write(tabs + "</categories>\n")
+        result.write("<offers>\n")
         for item in self.items:
-            tabs = "          "
             result.write(tabs+"<offer>\n")
             result.write(tabs+" <name>")
+            item.name = item.name.replace('&','&amp;')
             result.write(item.name.encode('utf8'))
             result.write("</name>\n")
-            result.write(tabs+" <categories>\n")
-            id = 10
-            prev = 1
-            for cat in item.categories:
-                result.write(tabs+"     <category id = \""+str(id)+"\" parentId=\""+str(prev)+"\">")
-                prev = id
-                id+=1
-                result.write(cat.encode('utf8'))
-                result.write("</category>\n")
-            result.write(tabs+"</categories>\n")
             result.write(tabs+" <article>"+item.article+"</article>\n")
             for pic in item.picture:
                 result.write(tabs+" <picture>"+pic+"</picture>\n")
-            result.write(tabs+" <old_price>"+str(item.old_price)+"</old_price>\n")
-            result.write(tabs + " <new_price>" + str(item.new_price) + "</new_price>\n")
+            result.write(tabs+" <oldprice>"+str(item.old_price)+"</oldprice>\n")
+            result.write(tabs + " <price>" + str(item.new_price) + "</price>\n")
+            result.write(tabs + " <categoryId>"+str(item.category.num)+"</categoryId>\n")
             result.write(tabs + " <description>")
-            result.write(item.description.encode('utf8'))
+            rmv_str ="Заказать товар можно на нашем сайте через корзину или по телефону"
+            rmv_str2='8 (495) 222-15-158, (800) 700-34-88'
+            form_descr = item.description.encode('utf8').replace(rmv_str,'').replace(rmv_str2,'').replace('&','&amp;')
+            result.write(form_descr)
             result.write( "</description>\n")
-            result.write(tabs + " <vendor>" + item.vendor + "</vendor>\n")
+            vendor = item.vendor.replace('&','&amp;')
+            result.write(tabs + " <vendor>" + vendor + "</vendor>\n")
             for par in item.param:
                 result.write(tabs+" <param name=\"")
-                result.write(par.encode('utf8'))
+                par_name = par.encode('utf8').replace('&','&amp;')
+                result.write(par_name)
                 result.write("\">")
-                result.write(item.param[par].encode('utf8'))
+                par_val = item.param[par].encode('utf8').replace('&','&amp;')
+                result.write(par_val)
                 result.write("</param>\n")
             result.write(tabs+"</offer>\n")
         end = """
@@ -290,3 +339,4 @@ class Gipfel_Parser():
     </yml_catalog>\n"""
         result.write(end)
         result.close()
+        print("Finished writing results")
