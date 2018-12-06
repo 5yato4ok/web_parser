@@ -65,7 +65,7 @@ class Nix_Parser():
         #for url in self.sub_category_url:
         #    self.parse_subcategory(url)
         #test parsing
-        #self.parse_subcategory('https://gipfel.ru/catalog/posuda-dlya-prigotovleniya/skovorody-i-soteyniki/nabor-skovorod/')
+        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=computers_other_all')
         '''
         counter = 0
         for item in self.items_url:
@@ -195,8 +195,6 @@ class Nix_Parser():
                 charac[category] = cat_val
         return charac,vendor
 
-
-
     def get_subcategory_url(self,soup):
         parent_blocks = soup.find_all('li', {"class": "e"})
         for div in parent_blocks:
@@ -211,12 +209,6 @@ class Nix_Parser():
             test.add(str(add + a['href']))
         return test
 
-
-    def parse_category(self, category_url):
-        sub_cat_url = self.get_subcategory_url(category_url)
-        for url in sub_cat_url:
-            self.parse_subcategory(url)
-
     def parse_subcategory(self,subcat_url):
         r = requests.get(subcat_url, allow_redirects=False)
         if r.status_code != 200:
@@ -228,12 +220,7 @@ class Nix_Parser():
             print(text)
             #self.textWritten.emit(text)
             return
-        soup = BeautifulSoup(r.text, 'html.parser')
-        pages_url = self.get_pages_url(soup)
-        pages_url.add(subcat_url)
-        for page in pages_url:
-            #need to check for additional pages
-            self.parse_page(page)
+        self.get_items_url(subcat_url)
         if self.is_log:
             text = "Current number of items url:"+str(len(self.items_url))
             if mutex.acquire():
@@ -245,31 +232,6 @@ class Nix_Parser():
 
     def parse_page(self, page_url):
         self.get_items_url(page_url)
-
-    def get_categories_url(self,soup):
-        categories_pages = soup.find_all('li', {"class": "menu_top_catalog_li"})
-        for div in categories_pages:
-            self.category_url.add(self.get_inner_url(div,self.root_url))
-        return self.category_url
-
-    def get_pages_url(self,soup):
-        #start pages
-        div_pages = soup.find_all('div', {"class": "nums"})
-        pages_url  = set()
-        for div in div_pages:
-            pages_url.add(str(self.root_url + div.a['href']))
-            links = div.find_all('a')
-            pages_num = dict()
-            for a in links:
-                if a.has_attr('class'):
-                    continue
-                pages_num[int(a.contents[0])] = self.root_url+ str(a['href'])
-            max_page = max(pages_num,key=int)
-            for num in range(2,max_page+1):
-                page_url = str(self.root_url + div.a['href'])
-                page_url = page_url.replace(page_url[len(page_url)-1], str(num))
-                pages_url.add(page_url)
-        return pages_url
 
     def get_items_url(self,page_url):
         par = {'p': 0}
