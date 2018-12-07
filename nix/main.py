@@ -27,8 +27,7 @@ class Item:
     category_parent = None
     article = ''
     picture = []
-    old_price = 0
-    new_price = 0
+    price = 0
     description = ''
     vendor = ''
     param = dict()
@@ -68,7 +67,7 @@ class Nix_Parser():
         #    self.parse_subcategory(url)
         #test parsing
         self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
-        '''
+
         counter = 0
         for item in self.items_url:
             if counter%50 == 0:
@@ -83,7 +82,7 @@ class Nix_Parser():
                     mutex.release()
                 print(text)
                 #self.textWritten.emit(text)
-        '''
+
 
     def parse_item(self,url):
         #try:
@@ -92,13 +91,13 @@ class Nix_Parser():
                 return
             soup = BeautifulSoup(r.text, 'html.parser')
             item = Item()
-            item.description = self.get_description(soup)
-            item.param,item.vendor = self.get_charecteristics(soup)
-            item.name,item.article = self.get_name_articulos(soup)
-            #item.categories = self.get_categories(soup)
+            item.name = self.get_name(soup)
+            item.article = self.get_articulos(soup)
             item.category = self.get_categories(soup)
             item.picture = self.get_picture(soup)
-            item.old_price,item.new_price = self.get_price(soup)
+            item.price = self.get_price(soup)
+            item.param,item.description ,item.vendor = self.get_charecteristics(soup)
+
             self.items.add(item)
         #except:
         #    return
@@ -125,7 +124,6 @@ class Nix_Parser():
             for pic in imgs:
                 pictures.append(self.root_url+pic['src'])
         return pictures
-
 
     def get_categories(self,soup):
         category = None
@@ -162,6 +160,20 @@ class Nix_Parser():
                 category = cur_node
         return category
 
+    def get_name(self,soup):
+        name = ''
+        block = soup.find_all('h1', {"class": "big"})
+        for val in block:
+            name = val.get_text()
+        return name
+
+    def get_articulos(self,soup):
+        articulos = ''
+        block = soup.find_all('div', {"class": "goods_compare"})
+        for value in block:
+            articulos = list(value.find_all('input'))[0]['value']
+        return articulos
+
     def get_name_articulos(self,soup):
         name = ''
         articulos = 0
@@ -174,17 +186,11 @@ class Nix_Parser():
                 articulos = href.replace(u"Артикул: ","")
         return name,articulos
 
-    def get_description(self,soup):
-        description = soup.find_all('div', {"class": "detail_text"})
-        text = ""
-        for value in description:
-            text = value.get_text()
-        return text
-
     def get_charecteristics(self,soup):
         charecteristics = soup.find_all('table', {"class": "props_list"})
         vendor = ''
         charac = dict()
+        desc = ''
         for val in charecteristics:
             tds_name = list(val.find_all('td', {"class": "char_name"}))
             tds = list(val.find_all('td', {"class": "char_value"}))
@@ -195,7 +201,7 @@ class Nix_Parser():
                     vendor = cat_val
                     continue
                 charac[category] = cat_val
-        return charac,vendor
+        return charac,vendor,desc
 
     def get_subcategory_url(self,soup):
         parent_blocks = soup.find_all('li', {"class": "e"})
@@ -253,7 +259,7 @@ class Nix_Parser():
             soup = BeautifulSoup(r.text, 'html.parser')
             curp_items = soup.find_all('a', {"class": "t"})
             for item in curp_items:
-                self.items_url.update(self.root_url+item['href']) #TODO: check non unique values
+                self.items_url.add(str(self.root_url+item['href']))
         except:
             return
 

@@ -26,19 +26,25 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="263">
-              <caret line="253" column="56" lean-forward="false" selection-start-line="253" selection-start-column="56" selection-end-line="253" selection-end-column="56" />
+            <state relative-caret-position="336">
+              <caret line="260" column="35" lean-forward="false" selection-start-line="260" selection-start-column="35" selection-end-line="260" selection-end-column="35" />
               <folding>
                 <element signature="e#46#61#0" expanded="true" />
-                <element signature="e#2404#3060#0" expanded="false" />
-                <element signature="e#3138#3605#0" expanded="false" />
-                <element signature="e#3647#3896#0" expanded="false" />
-                <element signature="e#3942#5204#0" expanded="false" />
-                <element signature="e#5253#5678#0" expanded="false" />
-                <element signature="e#5724#5892#0" expanded="false" />
-                <element signature="e#5942#6603#0" expanded="false" />
-                <element signature="e#8880#11356#0" expanded="false" />
+                <element signature="e#3517#3766#0" expanded="false" />
+                <element signature="e#3811#5073#0" expanded="false" />
+                <element signature="e#7989#8484#0" expanded="false" />
+                <element signature="e#8953#11429#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
+        <entry file="file://C:/Python27/Lib/site-packages/requests/models.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="197">
+              <caret line="382" column="0" lean-forward="false" selection-start-line="382" selection-start-column="0" selection-end-line="382" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -195,16 +201,36 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>235</line>
+          <line>241</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>251</line>
-          <option name="timeStamp" value="10" />
+          <line>164</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>170</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>89</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>74</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>71</line>
+          <option name="timeStamp" value="16" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="11" />
+      <option name="time" value="18" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -235,20 +261,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://C:/Python27/Lib/site-packages/requests/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="197">
+          <caret line="382" column="0" lean-forward="false" selection-start-line="382" selection-start-column="0" selection-end-line="382" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="263">
-          <caret line="253" column="56" lean-forward="false" selection-start-line="253" selection-start-column="56" selection-end-line="253" selection-end-column="56" />
+        <state relative-caret-position="336">
+          <caret line="260" column="35" lean-forward="false" selection-start-line="260" selection-start-column="35" selection-end-line="260" selection-end-column="35" />
           <folding>
             <element signature="e#46#61#0" expanded="true" />
-            <element signature="e#2404#3060#0" expanded="false" />
-            <element signature="e#3138#3605#0" expanded="false" />
-            <element signature="e#3647#3896#0" expanded="false" />
-            <element signature="e#3942#5204#0" expanded="false" />
-            <element signature="e#5253#5678#0" expanded="false" />
-            <element signature="e#5724#5892#0" expanded="false" />
-            <element signature="e#5942#6603#0" expanded="false" />
-            <element signature="e#8880#11356#0" expanded="false" />
+            <element signature="e#3517#3766#0" expanded="false" />
+            <element signature="e#3811#5073#0" expanded="false" />
+            <element signature="e#7989#8484#0" expanded="false" />
+            <element signature="e#8953#11429#0" expanded="false" />
           </folding>
         </state>
       </provider>
