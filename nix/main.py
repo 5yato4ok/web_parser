@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from threading import Lock
 from anytree import NodeMixin, RenderTree
 import random
+from selenium import webdriver
 
 cur_text = "Result of parsing:\n"
 mutex = Lock()
@@ -45,6 +46,7 @@ class Nix_Parser():
     items = set()
     timeout = 5
     is_log = False
+    #browser = webdriver.Chrome("chromedriver.exe")
     #textWritten = QtCore.pyqtSignal(str)
 
     def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
@@ -65,7 +67,7 @@ class Nix_Parser():
         #for url in self.sub_category_url:
         #    self.parse_subcategory(url)
         #test parsing
-        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=computers_other_all')
+        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
         '''
         counter = 0
         for item in self.items_url:
@@ -230,17 +232,28 @@ class Nix_Parser():
             print(text)
             #self.textWritten.emit(text)
 
-    def parse_page(self, page_url):
-        self.get_items_url(page_url)
+    def load_full_list(self,page_url):
+        self.browser.get(page_url)
+        aElements = self.browser.find_elements_by_tag_name("a")
+        for name in aElements:
+            attr = name.get_attribute("data-page")
+            if hasattr(attr,'all'):
+                #if (name.get_attribute("href") is not None and "javascript:void" in name.get_attribute("href"))\
+                #        and 'all' in name.get_attribute("data-page"):
+                print("IM IN HUR")
+                name.click()
+                break
+        smth =2
 
     def get_items_url(self,page_url):
+        #self.load_full_list(page_url)
         par = {'p': 0}
         try:
             r = requests.get(page_url, params=par)
             soup = BeautifulSoup(r.text, 'html.parser')
-            curp_items = soup.find_all('div', {"class": "main__goods--item main__goods--tile"})
-            for item in curp_items :
-                self.items_url.update(self.get_inner_url(item,self.root_url)) #TODO: check non unique values
+            curp_items = soup.find_all('a', {"class": "t"})
+            for item in curp_items:
+                self.items_url.update(self.root_url+item['href']) #TODO: check non unique values
         except:
             return
 
