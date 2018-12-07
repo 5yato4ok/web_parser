@@ -104,17 +104,14 @@ class Nix_Parser():
 
 
     def get_price(self,soup):
-        cur_price = soup.find_all('div', {"class", "price eres"})
+        cur_price = soup.find_all('div', {"class", "price"})
         current = 0
         for value in cur_price:
-            current_s = value.get_text().replace(u"руб.","").replace(" ","")
-            current = int(current_s)
-        old_price = soup.find_all('div', {"class", "price discount"})
-        old = 0
-        for val in old_price:
-            old_s = val.get_text().replace(u"руб.","").replace(" ","")
-            old = int(old_s)
-        return old, current
+            price = list(value.find_all('span'))[0].get_text()
+            price = ''.join(price.split())
+            price = price.replace(u"руб.","")
+            current = int(price)
+        return current
 
     def get_picture(self,soup):
         pictures = []

@@ -26,14 +26,14 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="260" column="35" lean-forward="false" selection-start-line="260" selection-start-column="35" selection-end-line="260" selection-end-column="35" />
+            <state relative-caret-position="386">
+              <caret line="111" column="45" lean-forward="true" selection-start-line="111" selection-start-column="45" selection-end-line="111" selection-end-column="45" />
               <folding>
                 <element signature="e#46#61#0" expanded="true" />
-                <element signature="e#3517#3766#0" expanded="false" />
-                <element signature="e#3811#5073#0" expanded="false" />
-                <element signature="e#7989#8484#0" expanded="false" />
-                <element signature="e#8953#11429#0" expanded="false" />
+                <element signature="e#3362#3611#0" expanded="false" />
+                <element signature="e#3656#4918#0" expanded="false" />
+                <element signature="e#7834#8329#0" expanded="false" />
+                <element signature="e#8798#11274#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -201,17 +201,17 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>241</line>
+          <line>238</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>164</line>
+          <line>161</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>170</line>
+          <line>167</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -221,16 +221,16 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>74</line>
-          <option name="timeStamp" value="15" />
+          <line>106</line>
+          <option name="timeStamp" value="18" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>71</line>
-          <option name="timeStamp" value="16" />
+          <line>74</line>
+          <option name="timeStamp" value="19" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="18" />
+      <option name="time" value="20" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -269,16 +269,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://C:/Python27/Lib/site-packages/requests/adapters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="516" column="0" lean-forward="true" selection-start-line="516" selection-start-column="0" selection-end-line="516" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="260" column="35" lean-forward="false" selection-start-line="260" selection-start-column="35" selection-end-line="260" selection-end-column="35" />
+        <state relative-caret-position="386">
+          <caret line="111" column="45" lean-forward="true" selection-start-line="111" selection-start-column="45" selection-end-line="111" selection-end-column="45" />
           <folding>
             <element signature="e#46#61#0" expanded="true" />
-            <element signature="e#3517#3766#0" expanded="false" />
-            <element signature="e#3811#5073#0" expanded="false" />
-            <element signature="e#7989#8484#0" expanded="false" />
-            <element signature="e#8953#11429#0" expanded="false" />
+            <element signature="e#3362#3611#0" expanded="false" />
+            <element signature="e#3656#4918#0" expanded="false" />
+            <element signature="e#7834#8329#0" expanded="false" />
+            <element signature="e#8798#11274#0" expanded="false" />
           </folding>
         </state>
       </provider>
