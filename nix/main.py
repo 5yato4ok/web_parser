@@ -124,15 +124,17 @@ class Nix_Parser():
 
     def get_categories(self,soup):
         category = None
-        div = soup.find_all('div', {"class", "nav-page"})
+        #div = soup.find('ul', {'id', "goods_crumbs"})
+        div = soup.find_all(id="goods_crumbs")
+        name = self.get_name(soup)
         parent = None
         for val in div:
-            bread = val.find_all("a")
+            bread = val.find_all("span")
             i = 0
             for crumb in bread:
                 i += 1
                 cat = crumb.get_text()
-                if cat == u"Главная":
+                if cat == u"Прайс-лист" or cat == name:
                     continue
                 cur_node = parent
                 found = False
