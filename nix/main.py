@@ -38,7 +38,7 @@ class Nix_Parser():
     catalog_url = ''
     items_url = set()
     category_url = set()
-    categories = Category(u'Каталог',1)
+    categories = Category(u'Прайс-лист',1)
     cat_id = list()
     cat_list = list()
     sub_category_url = set()
@@ -70,8 +70,8 @@ class Nix_Parser():
 
         counter = 0
         for item in self.items_url:
-            #if counter%50 == 0:
-                #time.sleep(self.timeout)
+            if counter%50 == 0:
+                time.sleep(self.timeout)
             self.parse_item(item)
             counter += 1
             if self.is_log:
@@ -134,7 +134,7 @@ class Nix_Parser():
             for crumb in bread:
                 i += 1
                 cat = crumb.get_text()
-                if cat == u"Прайс-лист" or cat == name:
+                if cat == name:
                     continue
                 cur_node = parent
                 found = False
@@ -153,7 +153,7 @@ class Nix_Parser():
                             break
                     self.cat_id.append(key)
                     cur_node = Category(cat,key,parent)
-                    self.cat_list.append(category)
+                    self.cat_list.append(cur_node)
                 elif i == len(bread):
                     cur_node = parent
                 category = cur_node
@@ -181,10 +181,8 @@ class Nix_Parser():
         charac = dict()
         desc = ''
         for i in range(0,len(categories)):
-            val_s = cat_val[i].contents[0].replace('\t', '').replace('\n', '')
-            if val_s[len(val_s)-1] ==u" ":
-                val_s = val_s[:-1]
-            category = categories[i].get_text()
+            val_s = cat_val[i].contents[0].replace('\t', '').replace('\n', '').rstrip()
+            category = categories[i].get_text().replace(u"(измерено в НИКСе)","")
             if u'Производитель' == category:
                 vendor = val_s
                 continue
@@ -288,7 +286,7 @@ class Nix_Parser():
             result.write(form_descr)
             result.write( "</description>\n")
             vendor = item.vendor.replace('&','&amp;')
-            result.write(tabs + " <vendor>" + vendor + "</vendor>\n")
+            result.write(tabs + " <vendor>" + vendor.encode('utf8') + "</vendor>\n")
             for par in item.param:
                 result.write(tabs+" <param name=\"")
                 par_name = par.encode('utf8').replace('&','&amp;')
