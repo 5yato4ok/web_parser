@@ -174,20 +174,24 @@ class Nix_Parser():
         return articulos
 
     def get_charecteristics(self,soup):
-        charecteristics = soup.find_all('table', {"class": "props_list"})
+        charecteristics = soup.find_all(id="PriceTable")
+        categories =  list(soup.find_all(id=lambda value: value and value.startswith("tds") and not value.startswith("tdsa")))
+        cat_val = list(soup.find_all(id=lambda value2: value2 and value2.startswith("tdsa")))
         vendor = ''
         charac = dict()
         desc = ''
-        for val in charecteristics:
-            tds_name = list(val.find_all('td', {"class": "char_name"}))
-            tds = list(val.find_all('td', {"class": "char_value"}))
-            for k in range(0,len(tds_name)):
-                category = tds_name[k].contents[1].get_text()
-                cat_val = tds[k].contents[1].get_text().replace('\t','').replace('\n','')
-                if u'Бренд' == category:
-                    vendor = cat_val
-                    continue
-                charac[category] = cat_val
+        for i in range(0,len(categories)):
+            val_s = cat_val[i].contents[0].replace('\t', '').replace('\n', '')
+            if val_s[len(val_s)-1] ==u" ":
+                val_s = val_s[:-1]
+            category = categories[i].get_text()
+            if u'Производитель' == category:
+                vendor = val_s
+                continue
+            if u'Описание' == category:
+                desc = val_s
+                continue
+            charac[category] = val_s
         return charac,vendor,desc
 
     def get_subcategory_url(self,soup):
@@ -275,8 +279,7 @@ class Nix_Parser():
             result.write(tabs+" <article>"+item.article+"</article>\n")
             for pic in item.picture:
                 result.write(tabs+" <picture>"+pic+"</picture>\n")
-            result.write(tabs+" <oldprice>"+str(item.old_price)+"</oldprice>\n")
-            result.write(tabs + " <price>" + str(item.new_price) + "</price>\n")
+            result.write(tabs + " <price>" + str(item.price) + "</price>\n")
             result.write(tabs + " <categoryId>"+str(item.category.num)+"</categoryId>\n")
             result.write(tabs + " <description>")
             rmv_str ="Заказать товар можно на нашем сайте через корзину или по телефону"
