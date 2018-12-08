@@ -101,8 +101,7 @@ def index():
 if __name__ == '__main__':
     #app.run(debug=True)
     print("Start task")
-    test_class = Nix_Parser('https://www.nix.ru', 'https://www.nix.ru/price/index.html',
-                            10,True)
+    test_class = Nix_Parser('https://www.nix.ru', 'https://www.nix.ru/price/index.html',60,True)
     test_class.parse_catalog()
     print("Finished parsing")
     test_class.write_to_txml(result_file_name)

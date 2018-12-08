@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 from threading import Lock
 from anytree import NodeMixin, RenderTree
 import random
-from selenium import webdriver
 
 cur_text = "Result of parsing:\n"
 mutex = Lock()
@@ -45,8 +44,7 @@ class Nix_Parser():
     items = set()
     timeout = 5
     is_log = False
-    #browser = webdriver.Chrome("chromedriver.exe")
-    #textWritten = QtCore.pyqtSignal(str)
+
 
     def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
         #QtCore.QObject.__init__(self)
@@ -66,11 +64,12 @@ class Nix_Parser():
         #for url in self.sub_category_url:
         #    self.parse_subcategory(url)
         #test parsing
-        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
 
+        #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
+        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
         counter = 0
         for item in self.items_url:
-            if counter%50 == 0:
+            if counter%10 == 0:
                 time.sleep(self.timeout)
             self.parse_item(item)
             counter += 1
@@ -97,7 +96,6 @@ class Nix_Parser():
             item.picture = self.get_picture(soup)
             item.price = self.get_price(soup)
             item.param,item.description ,item.vendor = self.get_charecteristics(soup)
-
             self.items.add(item)
         #except:
         #    return
@@ -181,8 +179,14 @@ class Nix_Parser():
         charac = dict()
         desc = ''
         for i in range(0,len(categories)):
-            val_s = cat_val[i].contents[0].replace('\t', '').replace('\n', '').rstrip()
-            category = categories[i].get_text().replace(u"(измерено в НИКСе)","")
+            val_s = cat_val[i].contents[0]
+            category = categories[i]
+            if isinstance(val_s, basestring):
+                val_s = val_s.replace('\t', '').replace('\n', '').rstrip()
+            else:
+                smth=2
+                continue
+            category = category.get_text().replace(u"(измерено в НИКСе)", "")
             if u'Производитель' == category:
                 vendor = val_s
                 continue
@@ -227,28 +231,76 @@ class Nix_Parser():
             print(text)
             #self.textWritten.emit(text)
 
+    def get_page_params(self,page_url):
+        par = {'p': 0}
+        r = requests.get(page_url, allow_redirects=False)
+        if r.status_code != 200:
+            return
+        soup = BeautifulSoup(r.text, 'html.parser')
+        inp = soup.find_all(type='hidden')
+        t_g_id = soup.find('input',{'name',u'g_id'})
+        fn = 0
+        c_id = 0
+        g_id = 0
+        store = 'msk-0_1721_1'
+        sys_all = 0
+        sort = ''
+        page = 'all'
+        thumbnail_view = 2
+        command='get_goods'
+        for val in inp:
+            if u'name' not in val.attrs:
+                continue
+            if val[u'name'] == 'g_id':
+                g_id = val['value']
+            elif val[u'name'] == 'fn':
+                fn = val['value']
+            elif val[u'name'] == 'c_id':
+                c_id = val['value']
+            elif val[u'name'] == 'store':
+                store = val['value']
+            elif val[u'name'] == 'sys_all':
+                sys_all = val['value']
+            elif val[u'name'] == 'sort':
+                sort = val['value']
+            elif val[u'name'] == 'page':
+                page = val['value']
+            elif val[u'name'] == 'def_sort':
+                sort = val['value'].replace('+',"%")
+            elif val[u'name'] == 'page':
+                page = val['value']
+            elif val[u'name'] == 'thumbnail_view':
+                thumbnail_view = val['value']
+        data = {
+            'fn':fn,
+            'c_id':c_id,
+            'g_id':g_id,
+            'store':store,
+            'sys_all':sys_all,
+            'sort':sort,
+            'page': page,
+            'thumbnail_view':thumbnail_view,
+            'command':command
+        }
+        return data
+
+
     def load_full_list(self,page_url):
-        self.browser.get(page_url)
-        aElements = self.browser.find_elements_by_tag_name("a")
-        for name in aElements:
-            attr = name.get_attribute("data-page")
-            if hasattr(attr,'all'):
-                #if (name.get_attribute("href") is not None and "javascript:void" in name.get_attribute("href"))\
-                #        and 'all' in name.get_attribute("data-page"):
-                print("IM IN HUR")
-                name.click()
-                break
-        smth =2
+        data = self.get_page_params(page_url)
+        r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data)
+        if r.status_code!=200:
+            return {}
+        return r
 
     def get_items_url(self,page_url):
-        #self.load_full_list(page_url)
-        par = {'p': 0}
+        r = self.load_full_list(page_url)
         try:
-            r = requests.get(page_url, params=par)
             soup = BeautifulSoup(r.text, 'html.parser')
             curp_items = soup.find_all('a', {"class": "t"})
             for item in curp_items:
-                self.items_url.add(str(self.root_url+item['href']))
+                url = str(self.root_url+item['href'])
+                url = url.replace('\\/','/')
+                self.items_url.add(url)
         except:
             return
 
@@ -276,7 +328,7 @@ class Nix_Parser():
             result.write("</name>\n")
             result.write(tabs+" <article>"+item.article+"</article>\n")
             for pic in item.picture:
-                result.write(tabs+" <picture>"+pic+"</picture>\n")
+                result.write(tabs+" <picture>"+pic.encode('utf8').name.replace('&','&amp;')+"</picture>\n")
             result.write(tabs + " <price>" + str(item.price) + "</price>\n")
             result.write(tabs + " <categoryId>"+str(item.category.num)+"</categoryId>\n")
             result.write(tabs + " <description>")
