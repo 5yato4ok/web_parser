@@ -66,12 +66,12 @@ class Nix_Parser():
         #for url in self.sub_category_url:
         #    self.parse_subcategory(url)
         #test parsing
-        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
+        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
 
         counter = 0
         for item in self.items_url:
-            if counter%50 == 0:
-                time.sleep(self.timeout)
+            #if counter%50 == 0:
+                #time.sleep(self.timeout)
             self.parse_item(item)
             counter += 1
             if self.is_log:
@@ -115,11 +115,11 @@ class Nix_Parser():
 
     def get_picture(self,soup):
         pictures = []
-        divs = soup.find_all('div', {"class", "slides"})
+        divs = soup.find_all('div', {"class", "carousel-content"})
         for value in divs:
-            imgs = value.find_all('img')
+            imgs = value.find_all('a')
             for pic in imgs:
-                pictures.append(self.root_url+pic['src'])
+                pictures.append(pic['href'])
         return pictures
 
     def get_categories(self,soup):
@@ -170,18 +170,6 @@ class Nix_Parser():
         for value in block:
             articulos = list(value.find_all('input'))[0]['value']
         return articulos
-
-    def get_name_articulos(self,soup):
-        name = ''
-        articulos = 0
-        name_artic = soup.find_all('div', {"class": "col-md-12"})
-        for value in name_artic:
-            name = list(value.find_all('h1'))[0].get_text()
-            art = value.find_all('p',{"class":"good-vendor"})
-            for a in art:
-                href = list(a.find_all('a'))[0].get_text()
-                articulos = href.replace(u"Артикул: ","")
-        return name,articulos
 
     def get_charecteristics(self,soup):
         charecteristics = soup.find_all('table', {"class": "props_list"})
