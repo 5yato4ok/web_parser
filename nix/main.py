@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 from threading import Lock
 from anytree import NodeMixin, RenderTree
 import random
+from cachetools import cached, TTLCache  # 1 - let's import the "cached" decorator and the "TTLCache" object from cachetools
+cache = TTLCache(maxsize=5000, ttl=300000)
+
 
 cur_text = "Result of parsing:\n"
 mutex = Lock()
@@ -55,6 +58,7 @@ class Nix_Parser():
         self.cat_id.append(1)
 
 
+    @cached(cache)
     def parse_catalog(self):
         print("Parsing catalog")
         par = {'p': 0}
@@ -65,11 +69,11 @@ class Nix_Parser():
         #    self.parse_subcategory(url)
         #test parsing
 
-        #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
-        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
+        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
+        #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
         counter = 0
         for item in self.items_url:
-            if counter%10 == 0:
+            if counter%20 == 0:
                 time.sleep(self.timeout)
             self.parse_item(item)
             counter += 1
@@ -305,7 +309,7 @@ class Nix_Parser():
             return
 
     def write_to_txml(self,file_name):
-        result = open(file_name,'w')
+        result = open(file_name, 'w')
         start = """<?xml version="1.0" encoding="UTF-8"?>\n
     <yml_catalog date="2017-02-05 17:22">\n"""
         result.write(start)
@@ -328,13 +332,11 @@ class Nix_Parser():
             result.write("</name>\n")
             result.write(tabs+" <article>"+item.article+"</article>\n")
             for pic in item.picture:
-                result.write(tabs+" <picture>"+pic.encode('utf8').name.replace('&','&amp;')+"</picture>\n")
+                result.write(tabs+" <picture>"+pic.encode('utf8').replace('&','&amp;')+"</picture>\n")
             result.write(tabs + " <price>" + str(item.price) + "</price>\n")
             result.write(tabs + " <categoryId>"+str(item.category.num)+"</categoryId>\n")
             result.write(tabs + " <description>")
-            rmv_str ="Заказать товар можно на нашем сайте через корзину или по телефону"
-            rmv_str2='8 (495) 222-15-158, (800) 700-34-88'
-            form_descr = item.description.encode('utf8').replace(rmv_str,'').replace(rmv_str2,'').replace('&','&amp;')
+            form_descr = item.description.encode('utf8').replace('&','&amp;')
             result.write(form_descr)
             result.write( "</description>\n")
             vendor = item.vendor.replace('&','&amp;')

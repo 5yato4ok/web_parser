@@ -20,6 +20,7 @@ class ParsingThread(Thread):
     timeout = 0
     is_logging=False
     socket = None
+    parser = None
     def __init__(self,daily,timeout_,is_logging_):
         self.delay = 1
         super(ParsingThread, self).__init__()
@@ -27,6 +28,8 @@ class ParsingThread(Thread):
         self.timeout = timeout_
         self.is_logging = is_logging_
         self._stop_event = Event()
+        self.parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',
+                                 self.timeout, self.is_logging)
 
     def stopped(self):
         return self._stop_event.is_set()
@@ -35,11 +38,9 @@ class ParsingThread(Thread):
         global parsing_over
         parsing_over = False
         print("Start task")
-        test_class = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',
-                                   self.timeout, self.is_logging)
-        test_class.parse_catalog()
+        self.parser.parse_catalog()
         print("Finished parsing")
-        test_class.write_to_txml(result_file_name)
+        self.parser.write_to_txml(result_file_name)
         parsing_over = True
 
     def stop(self):
