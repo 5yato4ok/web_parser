@@ -38,10 +38,14 @@ class ParsingThread(Thread):
         global parsing_over
         parsing_over = False
         print("Start task")
-        self.parser.parse_catalog()
-        print("Finished parsing")
-        self.parser.write_to_txml(result_file_name)
-        parsing_over = True
+        try:
+            self.parser.parse_catalog()
+            print("Finished parsing")
+            self.parser.write_to_txml(result_file_name)
+            parsing_over = True
+        except:
+            parsing_over=True
+            print("Eror while parsing")
 
     def stop(self):
         self._stop_event.set()
@@ -100,11 +104,7 @@ def index():
     return render_template('parser.html', output=cur_text)
 
 if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
     #app.run(debug=True)
-    print("Start task")
-    test_class = Nix_Parser('https://www.nix.ru', 'https://www.nix.ru/price/index.html',60,True)
-    test_class.parse_catalog()
-    print("Finished parsing")
-    test_class.write_to_txml(result_file_name)
 
 

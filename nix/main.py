@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 from threading import Lock
 from anytree import NodeMixin, RenderTree
 import random
-from cachetools import cached, TTLCache  # 1 - let's import the "cached" decorator and the "TTLCache" object from cachetools
-cache = TTLCache(maxsize=5000, ttl=300000)
+#from cachetools import cached, TTLCache  # 1 - let's import the "cached" decorator and the "TTLCache" object from cachetools
+#cache = TTLCache(maxsize=5000, ttl=300000)
 
 
 cur_text = "Result of parsing:\n"
@@ -33,8 +33,9 @@ class Item:
     description = ''
     vendor = ''
     param = dict()
+    def valid(self):
+        return self.name!='' and self.category and self.article != '' and self.picture
 
-#class Gipfel_Parser(QtCore.QObject):
 class Nix_Parser():
     root_url = ''
     catalog_url = ''
@@ -50,7 +51,6 @@ class Nix_Parser():
 
 
     def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
-        #QtCore.QObject.__init__(self)
         self.root_url = root_url_
         self.catalog_url = catalog_url_
         self.timeout = timeout_
@@ -58,22 +58,23 @@ class Nix_Parser():
         self.cat_id.append(1)
 
 
-    @cached(cache)
+    #@cached(cache)
     def parse_catalog(self):
         print("Parsing catalog")
         par = {'p': 0}
         r = requests.get(self.catalog_url, params=par)
         soup = BeautifulSoup(r.text, 'html.parser')
-        self.sub_category_url = self.get_subcategory_url(soup)
+        #self.sub_category_url = self.get_subcategory_url(soup)
         #for url in self.sub_category_url:
         #    self.parse_subcategory(url)
+
         #test parsing
 
         self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
         #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
         counter = 0
         for item in self.items_url:
-            if counter%20 == 0:
+            if counter%30 == 0:
                 time.sleep(self.timeout)
             self.parse_item(item)
             counter += 1
@@ -88,7 +89,7 @@ class Nix_Parser():
 
 
     def parse_item(self,url):
-        #try:
+        try:
             r = requests.get(url, allow_redirects=False)
             if r.status_code != 200:
                 return
@@ -101,8 +102,11 @@ class Nix_Parser():
             item.price = self.get_price(soup)
             item.param,item.description ,item.vendor = self.get_charecteristics(soup)
             self.items.add(item)
-        #except:
-        #    return
+        except:
+            time.sleep(self.timeout*3)
+            text = "Error in url:"+url+"\n"
+            cur_text += text
+            return
 
 
     def get_price(self,soup):
@@ -176,7 +180,6 @@ class Nix_Parser():
         return articulos
 
     def get_charecteristics(self,soup):
-        charecteristics = soup.find_all(id="PriceTable")
         categories =  list(soup.find_all(id=lambda value: value and value.startswith("tds") and not value.startswith("tdsa")))
         cat_val = list(soup.find_all(id=lambda value2: value2 and value2.startswith("tdsa")))
         vendor = ''
@@ -293,20 +296,19 @@ class Nix_Parser():
         data = self.get_page_params(page_url)
         r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data)
         if r.status_code!=200:
-            return {}
+            return None
         return r
 
     def get_items_url(self,page_url):
         r = self.load_full_list(page_url)
-        try:
+        if r:
             soup = BeautifulSoup(r.text, 'html.parser')
             curp_items = soup.find_all('a', {"class": "t"})
             for item in curp_items:
                 url = str(self.root_url+item['href'])
                 url = url.replace('\\/','/')
                 self.items_url.add(url)
-        except:
-            return
+
 
     def write_to_txml(self,file_name):
         result = open(file_name, 'w')
@@ -325,31 +327,38 @@ class Nix_Parser():
         result.write(tabs + "</categories>\n")
         result.write("<offers>\n")
         for item in self.items:
-            result.write(tabs+"<offer>\n")
-            result.write(tabs+" <name>")
-            item.name = item.name.replace('&','&amp;')
-            result.write(item.name.encode('utf8'))
-            result.write("</name>\n")
-            result.write(tabs+" <article>"+item.article+"</article>\n")
-            for pic in item.picture:
-                result.write(tabs+" <picture>"+pic.encode('utf8').replace('&','&amp;')+"</picture>\n")
-            result.write(tabs + " <price>" + str(item.price) + "</price>\n")
-            result.write(tabs + " <categoryId>"+str(item.category.num)+"</categoryId>\n")
-            result.write(tabs + " <description>")
-            form_descr = item.description.encode('utf8').replace('&','&amp;')
-            result.write(form_descr)
-            result.write( "</description>\n")
-            vendor = item.vendor.replace('&','&amp;')
-            result.write(tabs + " <vendor>" + vendor.encode('utf8') + "</vendor>\n")
-            for par in item.param:
-                result.write(tabs+" <param name=\"")
-                par_name = par.encode('utf8').replace('&','&amp;')
-                result.write(par_name)
-                result.write("\">")
-                par_val = item.param[par].encode('utf8').replace('&','&amp;')
-                result.write(par_val)
-                result.write("</param>\n")
-            result.write(tabs+"</offer>\n")
+            try:
+                if not item.valid():
+                    continue
+                result.write(tabs+"<offer>\n")
+                result.write(tabs+" <name>")
+                item.name = item.name.replace('&','&amp;')
+                result.write(item.name.encode('utf8'))
+                result.write("</name>\n")
+                result.write(tabs+" <article>"+item.article+"</article>\n")
+                for pic in item.picture:
+                    result.write(tabs+" <picture>"+pic.encode('utf8').replace('&','&amp;')+"</picture>\n")
+                result.write(tabs + " <price>" + str(item.price) + "</price>\n")
+                result.write(tabs + " <categoryId>"+str(item.category.num)+"</categoryId>\n")
+                if item.description!='':
+                    result.write(tabs + " <description>")
+                    form_descr = item.description.encode('utf8').replace('&','&amp;')
+                    result.write(form_descr)
+                    result.write( "</description>\n")
+                if item.vendor!='':
+                    vendor = item.vendor.replace('&','&amp;')
+                    result.write(tabs + " <vendor>" + vendor.encode('utf8') + "</vendor>\n")
+                for par in item.param:
+                    result.write(tabs+" <param name=\"")
+                    par_name = par.encode('utf8').replace('&','&amp;')
+                    result.write(par_name)
+                    result.write("\">")
+                    par_val = item.param[par].encode('utf8').replace('&','&amp;')
+                    result.write(par_val)
+                    result.write("</param>\n")
+                result.write(tabs+"</offer>\n")
+            except:
+                continue
         end = """
         </offers>\n
     </yml_catalog>\n"""
