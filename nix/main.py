@@ -49,7 +49,6 @@ class Nix_Parser():
     is_log = False
     proxy_mngr = None
 
-
     def __init__(self,root_url_,catalog_url_,timeout_,is_log_,max_counter=1):
         self.root_url = root_url_
         self.catalog_url = catalog_url_
@@ -58,16 +57,40 @@ class Nix_Parser():
         self.cat_id.append(1)
         self.proxy_mngr = Proxy(max_counter)
 
+    def is_proxy_banned(self, proxy, url):
+        if not proxy:
+            return True
+        try:
+            response = requests.get(url=url, proxies=proxy)
+            if response.status_code == 302:
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(e)
+            return True
+
+    def get_soup(self,url,allow_redirect=False):
+        par = {'p': 0}
+        proxy = self.proxy_mngr.get_valid_proxy()
+        while self.is_proxy_banned(proxy,url):
+            proxy = self.proxy_mngr.get_valid_proxy()
+        global cur_text
+        try:
+            r = requests.get(url, params=par, proxies=proxy, allow_redirects=allow_redirect)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            return soup
+        except Exception as e:
+            text = "Error connecting\n"+str(e)
+            print(text)
+            cur_text += text
+            return None
+
+
     #@cached(cache)
     def parse_catalog(self):
         print("Parsing catalog")
-        par = {'p': 0}
-        proxy = self.proxy_mngr.get_valid_proxy()
-        r = requests.get(self.catalog_url, params=par,proxies = proxy)
-        test = open("file.txt","w")
-        test.write(r.text.encode('utf8'))
-        test.close()
-        soup = BeautifulSoup(r.text, 'html.parser')
+        soup = self.get_soup(self.catalog_url,True)
         self.sub_category_url = self.get_subcategory_url(soup)
         for url in self.sub_category_url:
             self.parse_subcategory(url)
@@ -94,10 +117,7 @@ class Nix_Parser():
 
     def parse_item(self,url):
         try:
-            r = requests.get(url, allow_redirects=False, proxies = self.proxy_mngr.get_valid_proxy())
-            if r.status_code != 200:
-                return
-            soup = BeautifulSoup(r.text, 'html.parser')
+            soup = self.get_soup(url)
             item = Item()
             item.name = self.get_name(soup)
             item.article = self.get_articulos(soup)
@@ -109,10 +129,12 @@ class Nix_Parser():
         except:
             time.sleep(self.timeout*3)
             text = "Error in url:"+url+"\n"
-            global cur_text
-            cur_text += text
+            if mutex.acquire():
+                global cur_text
+                cur_text += text
+                mutex.release()
+            print(text)
             return
-
 
     def get_price(self,soup):
         cur_price = soup.find_all('div', {"class", "price"})
@@ -223,16 +245,6 @@ class Nix_Parser():
         return test
 
     def parse_subcategory(self,subcat_url):
-        r = requests.get(subcat_url, allow_redirects=False,proxies = self.proxy_mngr.get_valid_proxy())
-        if r.status_code != 200:
-            text = "Error connecting to page:"+ str(r.status_code)
-            if mutex.acquire():
-                global cur_text
-                cur_text += text
-                mutex.release()
-            print(text)
-            #self.textWritten.emit(text)
-            return
         self.get_items_url(subcat_url)
         if self.is_log:
             text = "Current number of items url:"+str(len(self.items_url))
@@ -244,11 +256,7 @@ class Nix_Parser():
             #self.textWritten.emit(text)
 
     def get_page_params(self,page_url):
-        par = {'p': 0}
-        r = requests.get(page_url, allow_redirects=False,proxies = self.proxy_mngr.get_valid_proxy())
-        if r.status_code != 200:
-            return
-        soup = BeautifulSoup(r.text, 'html.parser')
+        soup = self.get_soup(page_url)
         inp = soup.find_all(type='hidden')
         fn = 0
         c_id = 0
@@ -298,7 +306,8 @@ class Nix_Parser():
 
     def load_full_list(self,page_url):
         data = self.get_page_params(page_url)
-        r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data,proxies = self.proxy_mngr.get_valid_proxy())
+        r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data,
+                          proxies = self.proxy_mngr.get_valid_proxy())
         if r.status_code!=200:
             return None
         return r
