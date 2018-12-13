@@ -105,10 +105,9 @@ def index():
     return render_template('parser.html', output=cur_text)
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', port=5001,debug=True)
+    app.run(host='0.0.0.0', port=5001,debug=True)
     #app.run(debug=True)
-    parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',
-                             60,True, 100)
-    parser.parse_catalog()
+    #parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',60,True, 100)
+    #parser.parse_catalog()
 
 
