@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import requests
-import sys
-#from PyQt4 import QtCore,QtGui
 import time
 from bs4 import BeautifulSoup
 from threading import Lock
@@ -10,6 +8,7 @@ from anytree import NodeMixin, RenderTree
 import random
 #from cachetools import cached, TTLCache  # 1 - let's import the "cached" decorator and the "TTLCache" object from cachetools
 #cache = TTLCache(maxsize=5000, ttl=300000)
+from proxy import Proxy
 
 
 cur_text = "Result of parsing:\n"
@@ -48,21 +47,23 @@ class Nix_Parser():
     items = set()
     timeout = 5
     is_log = False
+    proxy_mngr = None
 
 
-    def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
+    def __init__(self,root_url_,catalog_url_,timeout_,is_log_,max_counter=1):
         self.root_url = root_url_
         self.catalog_url = catalog_url_
         self.timeout = timeout_
         self.is_log = is_log_
         self.cat_id.append(1)
-
+        self.proxy_mngr = Proxy(max_counter)
 
     #@cached(cache)
     def parse_catalog(self):
         print("Parsing catalog")
         par = {'p': 0}
-        r = requests.get(self.catalog_url, params=par)
+        proxy = self.proxy_mngr.get_valid_proxy()
+        r = requests.get(self.catalog_url, params=par,proxies = proxy)
         test = open("file.txt","w")
         test.write(r.text.encode('utf8'))
         test.close()
@@ -73,7 +74,7 @@ class Nix_Parser():
 
         #test parsing
 
-        self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
+        #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
         #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
         counter = 0
         for item in self.items_url:
@@ -93,7 +94,7 @@ class Nix_Parser():
 
     def parse_item(self,url):
         try:
-            r = requests.get(url, allow_redirects=False)
+            r = requests.get(url, allow_redirects=False, proxies = self.proxy_mngr.get_valid_proxy())
             if r.status_code != 200:
                 return
             soup = BeautifulSoup(r.text, 'html.parser')
@@ -108,6 +109,7 @@ class Nix_Parser():
         except:
             time.sleep(self.timeout*3)
             text = "Error in url:"+url+"\n"
+            global cur_text
             cur_text += text
             return
 
@@ -221,7 +223,7 @@ class Nix_Parser():
         return test
 
     def parse_subcategory(self,subcat_url):
-        r = requests.get(subcat_url, allow_redirects=False)
+        r = requests.get(subcat_url, allow_redirects=False,proxies = self.proxy_mngr.get_valid_proxy())
         if r.status_code != 200:
             text = "Error connecting to page:"+ str(r.status_code)
             if mutex.acquire():
@@ -243,12 +245,11 @@ class Nix_Parser():
 
     def get_page_params(self,page_url):
         par = {'p': 0}
-        r = requests.get(page_url, allow_redirects=False)
+        r = requests.get(page_url, allow_redirects=False,proxies = self.proxy_mngr.get_valid_proxy())
         if r.status_code != 200:
             return
         soup = BeautifulSoup(r.text, 'html.parser')
         inp = soup.find_all(type='hidden')
-        t_g_id = soup.find('input',{'name',u'g_id'})
         fn = 0
         c_id = 0
         g_id = 0
@@ -297,7 +298,7 @@ class Nix_Parser():
 
     def load_full_list(self,page_url):
         data = self.get_page_params(page_url)
-        r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data)
+        r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data,proxies = self.proxy_mngr.get_valid_proxy())
         if r.status_code!=200:
             return None
         return r
