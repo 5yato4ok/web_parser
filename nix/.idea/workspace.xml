@@ -26,8 +26,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="305" column="37" lean-forward="true" selection-start-line="305" selection-start-column="37" selection-end-line="305" selection-end-column="37" />
+            <state relative-caret-position="155">
+              <caret line="96" column="100" lean-forward="false" selection-start-line="96" selection-start-column="57" selection-end-line="96" selection-end-column="100" />
               <folding>
                 <element signature="e#46#61#0" expanded="true" />
                 <element signature="e#464#625#0" expanded="false" />
@@ -80,9 +80,10 @@
       <find>requests</find>
       <find>get_soap</find>
       <find>proxy</find>
-      <find>prox</find>
-      <find>try</find>
       <find>parse_ite</find>
+      <find>prox</find>
+      <find>reques</find>
+      <find>try</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -90,7 +91,9 @@
       <list>
         <option value="$PROJECT_DIR$/proxy.py" />
         <option value="$PROJECT_DIR$/html_gui.py" />
+        <option value="$PROJECT_DIR$/../gipfel/html_gui.py" />
         <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/../gipfel/main.py" />
       </list>
     </option>
   </component>
@@ -393,10 +396,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../gipfel/html_gui.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="31" column="40" lean-forward="true" selection-start-line="31" selection-start-column="40" selection-end-line="31" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gipfel/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="50">
+          <caret line="2" column="13" lean-forward="false" selection-start-line="2" selection-start-column="7" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="305" column="37" lean-forward="true" selection-start-line="305" selection-start-column="37" selection-end-line="305" selection-end-column="37" />
+        <state relative-caret-position="155">
+          <caret line="96" column="100" lean-forward="false" selection-start-line="96" selection-start-column="57" selection-end-line="96" selection-end-column="100" />
           <folding>
             <element signature="e#46#61#0" expanded="true" />
             <element signature="e#464#625#0" expanded="false" />

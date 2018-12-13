@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from threading import Lock
 from anytree import NodeMixin, RenderTree
 import random
-
+from proxy import Proxy
 cur_text = "Result of parsing:\n"
 mutex = Lock()
 
@@ -45,21 +45,23 @@ class Gipfel_Parser():
     items = set()
     timeout = 5
     is_log = False
+    proxy_mngr = None
     #textWritten = QtCore.pyqtSignal(str)
 
-    def __init__(self,root_url_,catalog_url_,timeout_,is_log_):
+    def __init__(self,root_url_,catalog_url_,timeout_,is_log_,max_counter=1):
         #QtCore.QObject.__init__(self)
         self.root_url = root_url_
         self.catalog_url = catalog_url_
         self.timeout = timeout_
         self.is_log = is_log_
         self.cat_id.append(1)
+        self.proxy_mngr = Proxy(max_counter)
 
 
     def parse_catalog(self):
         print("Parsing catalog")
         par = {'p': 0}
-        r = requests.get(self.catalog_url, params=par)
+        r = requests.get(self.catalog_url, params=par,proxies = self.proxy_mngr.get_valid_proxy())
         soup = BeautifulSoup(r.text, 'html.parser')
         #self.sub_category_url = self.get_subcategory_url(soup)
         #for url in self.sub_category_url:
@@ -82,7 +84,7 @@ class Gipfel_Parser():
 
     def parse_item(self,url):
         #try:
-            r = requests.get(url, allow_redirects=False)
+            r = requests.get(url, allow_redirects=False,proxies = self.proxy_mngr.get_valid_proxy())
             if r.status_code != 200:
                 return
             soup = BeautifulSoup(r.text, 'html.parser')
@@ -225,7 +227,7 @@ class Gipfel_Parser():
             self.parse_subcategory(url)
 
     def parse_subcategory(self,subcat_url):
-        r = requests.get(subcat_url, allow_redirects=False)
+        r = requests.get(subcat_url, allow_redirects=False,proxies = self.proxy_mngr.get_valid_proxy())
         if r.status_code != 200:
             text = "Error connecting to page:"+ str(r.status_code)
             if mutex.acquire():
@@ -281,7 +283,7 @@ class Gipfel_Parser():
     def get_items_url(self,page_url):
         par = {'p': 0}
         try:
-            r = requests.get(page_url, params=par)
+            r = requests.get(page_url, params=par,proxies = self.proxy_mngr.get_valid_proxy())
             soup = BeautifulSoup(r.text, 'html.parser')
             curp_items = soup.find_all('div', {"class": "main__goods--item main__goods--tile"})
             for item in curp_items :

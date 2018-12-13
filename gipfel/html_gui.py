@@ -36,7 +36,7 @@ class ParsingThread(Thread):
         parsing_over = False
         print("Start task")
         test_class = Gipfel_Parser('https://gipfel.ru', 'https://gipfel.ru/catalog',
-                                   self.timeout, self.is_logging)
+                                   self.timeout, self.is_logging,100)
         test_class.parse_catalog()
         print("Finished parsing")
         test_class.write_to_txml(result_file_name)
