@@ -6,8 +6,6 @@ from bs4 import BeautifulSoup
 from threading import Lock
 from anytree import NodeMixin, RenderTree
 import random
-#from cachetools import cached, TTLCache  # 1 - let's import the "cached" decorator and the "TTLCache" object from cachetools
-#cache = TTLCache(maxsize=5000, ttl=300000)
 from proxy import Proxy
 
 
@@ -20,7 +18,6 @@ class Category(NodeMixin):
         self.name = name
         self.parent = parent
         self.num = num
-
 
 class Item:
     name = ''
@@ -73,21 +70,21 @@ class Nix_Parser():
     def get_soup(self,url,allow_redirect=False):
         par = {'p': 0}
         proxy = self.proxy_mngr.get_valid_proxy()
+        global cur_text
         while self.is_proxy_banned(proxy,url):
             proxy = self.proxy_mngr.get_valid_proxy()
-        global cur_text
         try:
             r = requests.get(url, params=par, proxies=proxy, allow_redirects=allow_redirect)
             soup = BeautifulSoup(r.text, 'html.parser')
             return soup
         except Exception as e:
-            text = "Error connecting\n"+str(e)
-            print(text)
-            cur_text += text
+            if mutex.acquire():
+                text = "Error connecting: \n"+str(url)
+                print(text)
+                cur_text += text
+                mutex.release()
             return None
 
-
-    #@cached(cache)
     def parse_catalog(self):
         print("Parsing catalog")
         soup = self.get_soup(self.catalog_url,True)
@@ -113,7 +110,6 @@ class Nix_Parser():
                     mutex.release()
                 print(text)
                 #self.textWritten.emit(text)
-
 
     def parse_item(self,url):
         try:
@@ -303,7 +299,6 @@ class Nix_Parser():
         }
         return data
 
-
     def load_full_list(self,page_url):
         data = self.get_page_params(page_url)
         r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data,
@@ -321,7 +316,6 @@ class Nix_Parser():
                 url = str(self.root_url+item['href'])
                 url = url.replace('\\/','/')
                 self.items_url.add(url)
-
 
     def write_to_txml(self,file_name):
         result = open(file_name, 'w')
