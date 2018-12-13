@@ -63,10 +63,13 @@ class Nix_Parser():
         print("Parsing catalog")
         par = {'p': 0}
         r = requests.get(self.catalog_url, params=par)
+        test = open("file.txt","w")
+        test.write(r.text.encode('utf8'))
+        test.close()
         soup = BeautifulSoup(r.text, 'html.parser')
-        #self.sub_category_url = self.get_subcategory_url(soup)
-        #for url in self.sub_category_url:
-        #    self.parse_subcategory(url)
+        self.sub_category_url = self.get_subcategory_url(soup)
+        for url in self.sub_category_url:
+            self.parse_subcategory(url)
 
         #test parsing
 
