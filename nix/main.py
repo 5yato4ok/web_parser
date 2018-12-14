@@ -58,7 +58,12 @@ class Nix_Parser():
         if not proxy:
             return True
         try:
+            print("Error before")
             response = requests.get(url=url, proxies=proxy)
+            print("Error:"+str(responce.code))
+            test = open("ouptup.txt","w")
+            test.write(responce.text)
+            test.close()
             if response.status_code == 302:
                 return True
             else:
@@ -75,6 +80,7 @@ class Nix_Parser():
             proxy = self.proxy_mngr.get_valid_proxy()
         try:
             r = requests.get(url, params=par, proxies=proxy, allow_redirects=allow_redirect)
+
             soup = BeautifulSoup(r.text, 'html.parser')
             return soup
         except Exception as e:

@@ -29,7 +29,7 @@ class ParsingThread(Thread):
         self.is_logging = is_logging_
         self._stop_event = Event()
         self.parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',
-                                 self.timeout, self.is_logging,100)
+                                 self.timeout, self.is_logging)
 
     def stopped(self):
         return self._stop_event.is_set()
@@ -43,10 +43,9 @@ class ParsingThread(Thread):
             print("Finished parsing")
             self.parser.write_to_txml(result_file_name)
             parsing_over = True
-        except Exception as e:
+        except:
             parsing_over=True
             print("Eror while parsing")
-            print(e)
 
     def stop(self):
         self._stop_event.set()
@@ -105,9 +104,15 @@ def index():
     return render_template('parser.html', output=cur_text)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001,debug=True)
+    #app.run(host='0.0.0.0', port=5001)
     #app.run(debug=True)
-    #parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',60,True, 100)
-    #parser.parse_catalog()
+    try:
+        parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',60,True,100)
 
+        parser.parse_catalog()
+        print("Finished parsing")
+        parser.write_to_txml('result_file.xml')
+    except:
+        print("Error parsing")
+        parser.write_to_txml('result_file.xml')
 
