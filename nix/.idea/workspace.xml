@@ -14,8 +14,8 @@
       <file leaf-file-name="html_gui.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/html_gui.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="594">
-              <caret line="117" lean-forward="true" selection-start-line="117" selection-end-line="117" />
+            <state relative-caret-position="604">
+              <caret line="117" selection-start-line="117" selection-end-line="117" />
               <folding>
                 <element signature="e#50#108#0" expanded="true" />
               </folding>
@@ -35,8 +35,6 @@
                 <element signature="e#767#13218#0" />
                 <element signature="e#1125#1327#0" />
                 <element signature="e#1380#1685#0" />
-                <element signature="e#1744#2354#0" />
-                <element signature="e#2393#3342#0" />
                 <element signature="e#3382#4086#0" />
                 <element signature="e#4126#4438#0" />
                 <element signature="e#4480#4724#0" />
@@ -248,6 +246,59 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/html_gui.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1904">
+          <caret line="117" lean-forward="true" selection-start-line="117" selection-end-line="117" />
+          <folding>
+            <element signature="e#50#108#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="33" selection-start-line="33" selection-end-line="33" />
+          <folding>
+            <element signature="e#46#61#0" expanded="true" />
+            <element signature="e#294#455#0" />
+            <element signature="e#473#741#0" />
+            <element signature="e#767#13218#0" />
+            <element signature="e#1125#1327#0" />
+            <element signature="e#1380#1685#0" />
+            <element signature="e#3382#4086#0" />
+            <element signature="e#4126#4438#0" />
+            <element signature="e#4480#4724#0" />
+            <element signature="e#4769#6107#0" />
+            <element signature="e#6146#6289#0" />
+            <element signature="e#6333#6531#0" />
+            <element signature="e#6581#7509#0" />
+            <element signature="e#7559#7761#0" />
+            <element signature="e#7813#7994#0" />
+            <element signature="e#8048#8371#0" />
+            <element signature="e#8421#9893#0" />
+            <element signature="e#8725#9591#0" />
+            <element signature="e#9607#9873#0" />
+            <element signature="e#9942#10200#0" />
+            <element signature="e#10248#10586#0" />
+            <element signature="e#10635#13218#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/proxy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="31" selection-start-line="31" selection-end-line="31" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#389#1017#0" />
+            <element signature="e#1382#2122#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/html_gui.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="731">
           <caret line="48" lean-forward="true" selection-start-line="48" selection-end-line="48" />
           <folding>
@@ -279,8 +330,6 @@
             <element signature="e#767#13218#0" />
             <element signature="e#1125#1327#0" />
             <element signature="e#1380#1685#0" />
-            <element signature="e#1744#2354#0" />
-            <element signature="e#2393#3342#0" />
             <element signature="e#3382#4086#0" />
             <element signature="e#4126#4438#0" />
             <element signature="e#4480#4724#0" />
@@ -321,8 +370,6 @@
             <element signature="e#767#13218#0" />
             <element signature="e#1125#1327#0" />
             <element signature="e#1380#1685#0" />
-            <element signature="e#1744#2354#0" />
-            <element signature="e#2393#3342#0" />
             <element signature="e#3382#4086#0" />
             <element signature="e#4126#4438#0" />
             <element signature="e#4480#4724#0" />
@@ -440,8 +487,6 @@
             <element signature="e#767#13218#0" />
             <element signature="e#1125#1327#0" />
             <element signature="e#1380#1685#0" />
-            <element signature="e#1744#2354#0" />
-            <element signature="e#2393#3342#0" />
             <element signature="e#3382#4086#0" />
             <element signature="e#4126#4438#0" />
             <element signature="e#4480#4724#0" />
@@ -464,8 +509,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/html_gui.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="594">
-          <caret line="117" lean-forward="true" selection-start-line="117" selection-end-line="117" />
+        <state relative-caret-position="604">
+          <caret line="117" selection-start-line="117" selection-end-line="117" />
           <folding>
             <element signature="e#50#108#0" expanded="true" />
           </folding>

@@ -60,10 +60,6 @@ class Nix_Parser():
         try:
             print("Error before")
             response = requests.get(url=url, proxies=proxy)
-            print("Error:"+str(responce.code))
-            test = open("ouptup.txt","w")
-            test.write(responce.text)
-            test.close()
             if response.status_code == 302:
                 return True
             else:
@@ -74,22 +70,31 @@ class Nix_Parser():
 
     def get_soup(self,url,allow_redirect=False):
         par = {'p': 0}
-        proxy = self.proxy_mngr.get_valid_proxy()
+        #proxy = self.proxy_mngr.get_valid_proxy()
+        if not proxy:
+            return None
         global cur_text
-        while self.is_proxy_banned(proxy,url):
-            proxy = self.proxy_mngr.get_valid_proxy()
-        try:
-            r = requests.get(url, params=par, proxies=proxy, allow_redirects=allow_redirect)
-
-            soup = BeautifulSoup(r.text, 'html.parser')
-            return soup
+        #while self.is_proxy_banned(proxy,url):
+        #    proxy = self.proxy_mngr.get_valid_proxy()
+        #try:
+        proxy = {"http":"185.132.133.103:1080"}
+        r = requests.get(url, params=par, proxies=proxy, allow_redirects=allow_redirect)
+        #print("Error:"+str(r.code))
+        test = open("ouptup.txt","w")
+        test.write(r.text.encode('utf8'))
+        test.close()
+        soup = BeautifulSoup(r.text, 'html.parser')
+        return soup
+        '''
         except Exception as e:
             if mutex.acquire():
                 text = "Error connecting: \n"+str(url)
                 print(text)
+                print("Error:"+str(responce.code))
                 cur_text += text
                 mutex.release()
             return None
+        '''
 
     def parse_catalog(self):
         print("Parsing catalog")
@@ -104,8 +109,9 @@ class Nix_Parser():
         #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
         counter = 0
         for item in self.items_url:
-            if counter%30 == 0:
-                time.sleep(self.timeout)
+            random_value = random.randint(1,40)
+            if counter%random_value == 0:
+                time.sleep(self.timeout+random_value)
             self.parse_item(item)
             counter += 1
             if self.is_log:
@@ -120,14 +126,15 @@ class Nix_Parser():
     def parse_item(self,url):
         try:
             soup = self.get_soup(url)
-            item = Item()
-            item.name = self.get_name(soup)
-            item.article = self.get_articulos(soup)
-            item.category = self.get_categories(soup)
-            item.picture = self.get_picture(soup)
-            item.price = self.get_price(soup)
-            item.param,item.description ,item.vendor = self.get_charecteristics(soup)
-            self.items.add(item)
+            if soup :
+                item = Item()
+                item.name = self.get_name(soup)
+                item.article = self.get_articulos(soup)
+                item.category = self.get_categories(soup)
+                item.picture = self.get_picture(soup)
+                item.price = self.get_price(soup)
+                item.param,item.description ,item.vendor = self.get_charecteristics(soup)
+                self.items.add(item)
         except:
             time.sleep(self.timeout*3)
             text = "Error in url:"+url+"\n"

@@ -112,7 +112,8 @@ if __name__ == '__main__':
         parser.parse_catalog()
         print("Finished parsing")
         parser.write_to_txml('result_file.xml')
-    except:
+    except Exception as e:
         print("Error parsing")
-        parser.write_to_txml('result_file.xml')
+        print(e)
+        parser.write_to_txml('result_file_error.xml')
 

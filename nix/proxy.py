@@ -50,12 +50,17 @@ class Proxy:
                     self.proxy_list = self.load_proxy_list()
                 proxy = self.proxy_list.pop()
                 if not self.is_valid(proxy):
+                    print("Proxy is not valid")
                     cur_try += 1
                     if cur_try >= self.max_tries:
+                        print("Exceeded all proxy tries")
                         self.current_value = {}
+                        self.proxy_list = {}
                         break
                     continue
                 else:
+                    print("Proxy is valid")
+                    print("Using proxy: "+str(proxy))
                     self.current_counter = 1
                     self.current_value = proxy
                     break
