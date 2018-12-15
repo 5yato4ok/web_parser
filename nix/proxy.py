@@ -13,20 +13,37 @@ class Proxy:
         self.max_counter = max_counter
         self.max_tries = max_tries
 
+    def is_valid_ip(self,s):
+        a = s.split('.')
+        if len(a) != 4:
+            return False
+        for x in a:
+            if not x.isdigit():
+                return False
+            i = int(x)
+            if i < 0 or i > 255:
+                return False
+        return True
+
     def load_proxy_list(self):
         proxy_list = list()
-        res = requests.get('https://free-proxy-list.net/', headers={'User-Agent':'Mozilla/5.0'})
+        res = requests.get('https://www.proxynova.com/proxy-server-list/elite-proxies/',
+                           headers={'User-Agent':'Mozilla/5.0'})
         soup = BeautifulSoup(res.text,'html.parser')
         for items in soup.select("tbody tr"):
-            https = ""
-            for item in items.select("td")[6]:
-                https = str(item)
-            proxy = ':'.join([item.text for item in items.select("td")[:2]])
-            proxyDict = {}
-            if "yes" in https:
-                proxyDict = {"https": proxy}
-            else:
-                proxyDict = {"http": proxy}
+            values = items.select("td")
+            if not len(values):
+                continue
+            ip = values[0].select("abbr")
+            if not ip:
+                continue
+            ip = ip[0]['title']
+            if not self.is_valid_ip(ip):
+                continue
+            port = values[1].get_text()
+            port = filter(lambda x: x.isdigit(),port)
+            proxy = ip+":"+port
+            proxyDict = {"http": proxy}
             proxy_list.append(proxyDict)
         return proxy_list
 
@@ -44,7 +61,7 @@ class Proxy:
 
     def get_valid_proxy(self):
         cur_try = 0
-        if self.current_counter%self.max_counter == 0 and not self.is_valid(self.current_value):
+        if self.current_counter%self.max_counter == 0 or not self.is_valid(self.current_value):
             while True:
                 if not self.proxy_list:
                     self.proxy_list = self.load_proxy_list()

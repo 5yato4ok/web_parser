@@ -106,9 +106,8 @@ def index():
 if __name__ == '__main__':
     #app.run(host='0.0.0.0', port=5001)
     #app.run(debug=True)
+    parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html', 60, True)
     try:
-        parser = Nix_Parser('https://www.nix.ru/', 'https://www.nix.ru/price/index.html',60,True,100)
-
         parser.parse_catalog()
         print("Finished parsing")
         parser.write_to_txml('result_file.xml')

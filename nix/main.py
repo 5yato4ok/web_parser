@@ -54,47 +54,34 @@ class Nix_Parser():
         self.cat_id.append(1)
         self.proxy_mngr = Proxy(max_counter)
 
-    def is_proxy_banned(self, proxy, url):
-        if not proxy:
-            return True
-        try:
-            print("Error before")
-            response = requests.get(url=url, proxies=proxy)
-            if response.status_code == 302:
-                return True
-            else:
-                return False
-        except Exception as e:
-            print(e)
-            return True
 
     def get_soup(self,url,allow_redirect=False):
-        par = {'p': 0}
-        #proxy = self.proxy_mngr.get_valid_proxy()
+        proxy = self.proxy_mngr.get_valid_proxy()
         if not proxy:
             return None
         global cur_text
-        #while self.is_proxy_banned(proxy,url):
-        #    proxy = self.proxy_mngr.get_valid_proxy()
-        #try:
-        proxy = {"http":"185.132.133.103:1080"}
-        r = requests.get(url, params=par, proxies=proxy, allow_redirects=allow_redirect)
-        #print("Error:"+str(r.code))
-        test = open("ouptup.txt","w")
-        test.write(r.text.encode('utf8'))
-        test.close()
-        soup = BeautifulSoup(r.text, 'html.parser')
-        return soup
-        '''
+        try:
+            session = requests.session()
+            session.proxies = proxy
+            r = session.get(url)
+            session.close()
+            #print("Error:"+str(r.code))
+            #test = open("ouptup.txt","w")
+            #test.write(r.text.encode('utf8'))
+            #test.close()
+            soup = BeautifulSoup(r.text, 'html.parser')
+            g = session.get('http://httpbin.org/ip')
+            print(g.text)
+            return soup
+
         except Exception as e:
+            print e
             if mutex.acquire():
                 text = "Error connecting: \n"+str(url)
                 print(text)
-                print("Error:"+str(responce.code))
                 cur_text += text
                 mutex.release()
             return None
-        '''
 
     def parse_catalog(self):
         print("Parsing catalog")
@@ -314,8 +301,17 @@ class Nix_Parser():
 
     def load_full_list(self,page_url):
         data = self.get_page_params(page_url)
-        r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data,
-                          proxies = self.proxy_mngr.get_valid_proxy())
+        session = requests.session()
+        proxy = self.proxy_mngr.get_valid_proxy()
+        if not proxy:
+            return None
+        session.proxies = proxy
+        r = session.post(url=page_url,data=data)
+        #g = session.get('http://httpbin.org/ip')
+        #print(g.text)
+        session.close()
+        #r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data,
+        #                  proxies = self.proxy_mngr.get_valid_proxy())
         if r.status_code!=200:
             return None
         return r
