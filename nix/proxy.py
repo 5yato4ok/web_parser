@@ -30,28 +30,22 @@ class Proxy:
         res = requests.get('https://www.proxynova.com/proxy-server-list/elite-proxies/',
                            headers={'User-Agent':'Mozilla/5.0'})
         soup = BeautifulSoup(res.text,'html.parser')
-        for items in soup.select("tbody tr"):
-            values = items.select("td")
-            if not len(values):
-                continue
-            ip = values[0].select("abbr")
-            if not ip:
-                continue
-            ip = ip[0]['title']
-            if not self.is_valid_ip(ip):
-                continue
-            port = values[1].get_text()
-            port = filter(lambda x: x.isdigit(),port)
-            proxy = ip+":"+port
-            proxyDict = {"http": proxy}
-            proxy_list.append(proxyDict)
+        http_proxy = "http://Ko4s1F:VLawa7@193.7.196.160:8000"
+        https_proxy = "https://Ko4s1F:VLawa7@193.7.196.160:8000"
+        proxyDict = {
+            "http": http_proxy,
+            "https": https_proxy
+        }
+        # response = requests.get(url="https://icanhazip.com/", proxies=proxyDict)
+        proxy_list.append(proxyDict)
         return proxy_list
 
     def is_valid(self,proxy):
         if not proxy:
             return False
         try:
-            response = requests.get(url="https://ya.ru/", proxies=proxy)
+            # response = requests.get(url="https://ya.ru/", proxies=proxy)
+            response = requests.get(url="https://icanhazip.com/", proxies=proxy)
             if response.status_code == 200:
                 return True
             else:

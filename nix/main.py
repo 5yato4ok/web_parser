@@ -64,13 +64,16 @@ class Nix_Parser():
             session = requests.session()
             session.proxies = proxy
             r = session.get(url)
-            session.close()
+
             #print("Error:"+str(r.code))
             #test = open("ouptup.txt","w")
             #test.write(r.text.encode('utf8'))
             #test.close()
+
             soup = BeautifulSoup(r.text, 'html.parser')
+            #g = requests.get('http://httpbin.org/ip', proxies=proxy)
             g = session.get('http://httpbin.org/ip')
+            session.close()
             print(g.text)
             return soup
 
