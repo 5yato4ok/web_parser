@@ -71,10 +71,7 @@ class Nix_Parser():
             #test.close()
 
             soup = BeautifulSoup(r.text, 'html.parser')
-            #g = requests.get('http://httpbin.org/ip', proxies=proxy)
-            g = session.get('http://httpbin.org/ip')
             session.close()
-            print(g.text)
             return soup
 
         except Exception as e:

@@ -25,33 +25,60 @@ class Proxy:
                 return False
         return True
 
-    def load_proxy_list(self):
+    def load_proxy_list(self): #TODO: remove hardcoded proxy
         proxy_list = list()
-        res = requests.get('https://www.proxynova.com/proxy-server-list/elite-proxies/',
-                           headers={'User-Agent':'Mozilla/5.0'})
-        soup = BeautifulSoup(res.text,'html.parser')
         http_proxy = "http://Ko4s1F:VLawa7@193.7.196.160:8000"
         https_proxy = "https://Ko4s1F:VLawa7@193.7.196.160:8000"
         proxyDict = {
             "http": http_proxy,
             "https": https_proxy
         }
-        # response = requests.get(url="https://icanhazip.com/", proxies=proxyDict)
+        proxy_list.append(proxyDict)
+        http_proxy = "http://HPNoN8:aUsT3T@146.185.198.192:8000"
+        https_proxy = "https://HPNoN8:aUsT3T@146.185.198.192:8000"
+        proxyDict = {
+            "http": http_proxy,
+            "https": https_proxy
+        }
+        proxy_list.append(proxyDict)
+        http_proxy = "http://HPNoN8:aUsT3T@146.185.199.123:8000"
+        https_proxy = "https://HPNoN8:aUsT3T@146.185.199.123:8000"
+        proxyDict = {
+            "http": http_proxy,
+            "https": https_proxy
+        }
         proxy_list.append(proxyDict)
         return proxy_list
+
+    def is_valid_https(self,proxy):
+        try:
+            proxy_ip = proxy['https']
+            proxy_ip = proxy_ip.split("@")[1].split(":")[0]
+            session = requests.session()
+            session.proxies = proxy
+            r = session.get("https://icanhazip.com/")
+            ip_resp = r.text.replace("\n","")
+            return ip_resp.encode('utf8') == proxy_ip
+        except:
+            return False
+
+    def is_valid_http(self,proxy):
+        try:
+            proxy_ip=proxy['http']
+            proxy_ip = proxy_ip.split("@")[1].split(":")[0]
+            session = requests.session()
+            session.proxies = proxy
+            r = session.get("http://httpbin.org/ip")
+            ip_resp = r.text.replace(u"{","").replace(u"}","").replace(u"origin","").\
+                replace(u"\"","").replace(" ","").replace(u":","").replace("\n","")
+            return ip_resp.encode('utf8') ==proxy_ip
+        except:
+            return False
 
     def is_valid(self,proxy):
         if not proxy:
             return False
-        try:
-            # response = requests.get(url="https://ya.ru/", proxies=proxy)
-            response = requests.get(url="https://icanhazip.com/", proxies=proxy)
-            if response.status_code == 200:
-                return True
-            else:
-                return False
-        except:
-            return False
+        return self.is_valid_http(proxy) and self.is_valid_https(proxy)
 
     def get_valid_proxy(self):
         cur_try = 0
