@@ -112,6 +112,7 @@ class Nix_Parser():
                     mutex.release()
                 print(text)
                 #self.textWritten.emit(text)
+        url_holder.close()
 
     def parse_item(self,url):
         try:
