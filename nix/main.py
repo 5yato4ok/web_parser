@@ -95,11 +95,14 @@ class Nix_Parser():
         #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=diskettes_disks_all')
         #self.parse_subcategory('https://www.nix.ru/price/price_list.html?section=mouses_all')
         counter = 0
+        url_holder = open("url_parsed.txt","w")
         for item in self.items_url:
             random_value = random.randint(1,40)
             if counter%random_value == 0:
                 time.sleep(self.timeout+random_value)
             self.parse_item(item)
+            url_holder.write(item)
+            url_holder.write("\n")
             counter += 1
             if self.is_log:
                 text = "Current number of items parse:" + str(counter)
