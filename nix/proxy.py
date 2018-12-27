@@ -25,7 +25,7 @@ class Proxy:
                 return False
         return True
 
-    def load_proxy_list(self): #TODO: remove hardcoded proxy
+    def load_proxy_list_from_file(self): #TODO: remove hardcoded proxy
         proxy_list = list()
         with open("proxy.txt","r") as plist:
             lines = plist.readlines()
@@ -39,7 +39,7 @@ class Proxy:
                 proxy_list.append(proxyDict)
         return proxy_list
 
-    def load_proxy_list2(self):
+    def load_proxy_list(self):
         proxy_list = list()
         res = requests.get('https://www.proxynova.com/proxy-server-list/elite-proxies/',
                            headers={'User-Agent':'Mozilla/5.0'})

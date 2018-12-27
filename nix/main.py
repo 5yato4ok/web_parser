@@ -120,8 +120,8 @@ class Nix_Parser():
                     global cur_text
                     cur_text += text
                     mutex.release()
-                val = (datetime.datetime.now().time())
-                print("["+val+"] "+text+"\r")
+                #val = str(datetime.datetime.now().time())
+                print(text+"\r")
                 #self.textWritten.emit(text)
         url_holder.close()
 
@@ -321,8 +321,7 @@ class Nix_Parser():
         if not proxy:
             return None
         session.proxies = proxy
-        r = session.post(url=page_url,data=data)
-        #g = session.get('http://httpbin.org/ip')
+        r = session.post(url='https://www.nix.ru/lib/fast_search.php',data=data)
         #print(g.text)
         session.close()
         #r = requests.post('https://www.nix.ru/lib/fast_search.php',data=data,
