@@ -39,28 +39,78 @@ class Proxy:
                 proxy_list.append(proxyDict)
         return proxy_list
 
+    def load_proxy_list2(self):
+        proxy_list = list()
+        res = requests.get('https://www.proxynova.com/proxy-server-list/elite-proxies/',
+                           headers={'User-Agent':'Mozilla/5.0'})
+        soup = BeautifulSoup(res.text,'html.parser')
+        for items in soup.select("tbody tr"):
+            values = items.select("td")
+            if not len(values):
+                continue
+            ip = values[0].select("abbr")
+            if not ip:
+                continue
+            ip = ip[0]['title']
+            if not self.is_valid_ip(ip):
+                continue
+            port = values[1].get_text()
+            port = filter(lambda x: x.isdigit(),port)
+            proxy = ip+":"+port
+            proxyDict = {"http": "http://"+proxy.encode('utf8'),
+                         "https": "https://"+proxy.encode('utf8')
+                         }
+            proxy_list.append(proxyDict)
+        return proxy_list
+
+    def load_proxy_list3(self):
+        proxy_list = list()
+        res = requests.get('https://free-proxy-list.net/', headers={'User-Agent':'Mozilla/5.0'})
+        soup = BeautifulSoup(res.text,'html.parser')
+        for items in soup.select("tbody tr"):
+            https = ""
+            for item in items.select("td")[6]:
+                https = str(item)
+            proxy = ':'.join([item.text for item in items.select("td")[:2]])
+            proxyDict = {}
+            if "yes" in https:
+                proxyDict = {"https":  "https://"+proxy.encode('utf8'),
+                             "http":  "http://"+proxy.encode('utf8') }
+            else:
+                continue
+            proxy_list.append(proxyDict)
+        return proxy_list
+
     def is_valid_https(self,proxy):
         try:
             proxy_ip = proxy['https']
-            proxy_ip = proxy_ip.split("@")[1].split(":")[0]
+            if "@" in proxy_ip:
+                proxy_ip = proxy_ip.split("@")[1].split(":")[0]
+            else:
+                proxy_ip = proxy_ip.replace('https://', '').split(":")[0]
             session = requests.session()
             session.proxies = proxy
             r = session.get("https://icanhazip.com/")
             ip_resp = r.text.replace("\n","")
-            return ip_resp.encode('utf8') == proxy_ip
+            val = ip_resp.encode('utf8') == proxy_ip
+            return val
         except:
             return False
 
     def is_valid_http(self,proxy):
         try:
             proxy_ip=proxy['http']
-            proxy_ip = proxy_ip.split("@")[1].split(":")[0]
+            if "@" in proxy_ip:
+                proxy_ip = proxy_ip.split("@")[1].split(":")[0]
+            else:
+                proxy_ip = proxy_ip.replace('http://','').split(":")[0]
             session = requests.session()
             session.proxies = proxy
             r = session.get("http://httpbin.org/ip")
             ip_resp = r.text.replace(u"{","").replace(u"}","").replace(u"origin","").\
                 replace(u"\"","").replace(" ","").replace(u":","").replace("\n","")
-            return ip_resp.encode('utf8') ==proxy_ip
+            val = ip_resp.encode('utf8') ==proxy_ip
+            return val
         except:
             return False
 

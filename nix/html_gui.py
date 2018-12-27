@@ -106,7 +106,7 @@ def index():
 if __name__ == '__main__':
     #app.run(host='0.0.0.0', port=5001)
     #app.run(debug=True)
-    parser = Nix_Parser('https://www.nix.ru', 'https://www.nix.ru/price/index.html', 0, True,5)
+    parser = Nix_Parser('https://www.nix.ru', 'https://www.nix.ru/price/index.html', 0, True,1000)
     try:
         parser.parse_catalog()
         print("Finished parsing")
