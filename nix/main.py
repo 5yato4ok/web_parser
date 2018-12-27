@@ -7,7 +7,7 @@ from threading import Lock
 from anytree import NodeMixin, RenderTree
 import random
 from proxy import Proxy
-
+import datetime
 
 cur_text = "Result of parsing:\n"
 mutex = Lock()
@@ -64,13 +64,23 @@ class Nix_Parser():
             session = requests.session()
             session.proxies = proxy
             r = session.get(url)
-
             #print("Error:"+str(r.code))
             #test = open("ouptup.txt","w")
             #test.write(r.text.encode('utf8'))
             #test.close()
 
             soup = BeautifulSoup(r.text, 'html.parser')
+            title = soup.find('title')
+            proxy_list_len = len(self.proxy_mngr.proxy_list)
+            while proxy_list_len and u"заблокирован" in title.text:
+                proxy = self.proxy_mngr.get_valid_proxy(True)
+                session = requests.session()
+                session.proxies = proxy
+                r = session.get(url)
+                soup = BeautifulSoup(r.text, 'html.parser')
+                title = soup.find('title')
+                proxy_list_len=proxy_list_len-1
+                session.close()
             session.close()
             return soup
 
@@ -110,7 +120,8 @@ class Nix_Parser():
                     global cur_text
                     cur_text += text
                     mutex.release()
-                print(text)
+                val = (datetime.datetime.now().time())
+                print("["+val+"] "+text+"\r")
                 #self.textWritten.emit(text)
         url_holder.close()
 
@@ -252,7 +263,7 @@ class Nix_Parser():
                 global cur_text
                 cur_text += text
                 mutex.release()
-            print(text)
+            print(text+"\r")
             #self.textWritten.emit(text)
 
     def get_page_params(self,page_url):
